@@ -1,0 +1,861 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>脱おりこうさんプレゼン</title>
+    <style>
+      :root {
+        --cream: #faf7f0; --ink: #2b2b2b; --sub: #7a736a;
+        --sun: #e8a33d; --sun-soft: #f2c889; --sun-pale: #fdf3e0;
+        --water: #5bbfbf; --valley: #b07a55;
+        --mincho: "Yu Mincho","YuMincho","Hiragino Mincho ProN","Hiragino Mincho Pro","MS Mincho",serif;
+      }
+      * { margin:0; padding:0; box-sizing:border-box; }
+      html, body { overflow:hidden; background:#1e1e1e; font-family:var(--mincho); }
+
+      #presentation-wrapper {
+        position:fixed; inset:0;
+        display:flex; justify-content:center; align-items:center;
+      }
+      #slide-viewport { position:relative; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,0.5); }
+      #slide-scaler { width:1920px; height:1080px; transform-origin:top left; position:relative; }
+
+      .hf-scene {
+        position:absolute; top:0; left:0;
+        width:1920px; height:1080px; overflow:hidden;
+        background:var(--cream); display:none;
+      }
+      .hf-scene.active { display:block; }
+
+      /* 共通パーツ */
+      .sun-svg { display:none; }
+      .slide-label { position:absolute; top:72px; left:120px; font-size:28px; color:var(--sub); letter-spacing:0.12em; }
+      .slide-title { position:absolute; top:160px; left:120px; font-size:72px; color:var(--ink); letter-spacing:0.06em; line-height:1.3; }
+      .accent-line { position:absolute; top:310px; left:120px; width:80px; height:3px; background:var(--sun); transform-origin:left center; }
+      .slide-body { position:absolute; top:348px; left:120px; right:120px; font-size:44px; color:var(--ink); line-height:1.8; letter-spacing:0.03em; }
+      .slide-body.wide { font-size:40px; }
+      .slide-body.narrow { top:348px; right:600px; }
+      .em { color:var(--water); }
+      .em-sun { color:var(--sun); }
+      .em-valley { color:var(--valley); }
+      .ghost { position:absolute; font-size:260px; color:#ede8df; letter-spacing:0.04em; line-height:1; user-select:none; pointer-events:none; z-index:0; }
+
+      /* S14 証言カード */
+      .testimony-grid { position:absolute; top:220px; left:80px; right:80px; display:flex; gap:56px; }
+      .testimony-card {
+        flex:1; background:var(--sun-pale); border-radius:16px;
+        padding:48px 44px; box-shadow:0 0 0.5px rgba(0,0,0,0.14),0 1px 1px rgba(0,0,0,0.24);
+      }
+      .tc-name { font-size:28px; color:var(--sub); letter-spacing:0.12em; margin-bottom:24px; }
+      .tc-label { font-size:22px; color:var(--sub); letter-spacing:0.08em; margin-bottom:8px; }
+      .tc-text { font-size:32px; color:var(--ink); line-height:1.6; margin-bottom:20px; }
+      .tc-after { font-size:36px; color:var(--ink); line-height:1.6; font-weight:400; }
+
+      /* S10 ステップ */
+      .step-list { position:absolute; top:220px; left:120px; right:120px; }
+      .step-item { display:flex; align-items:flex-start; gap:48px; margin-bottom:60px; }
+      .step-num { font-size:80px; color:var(--sun); letter-spacing:0; line-height:1; flex-shrink:0; width:100px; font-family:sans-serif; }
+      .step-text { font-size:44px; color:var(--ink); line-height:1.6; padding-top:8px; }
+      .step-sub { font-size:28px; color:var(--sub); margin-top:8px; }
+
+      /* S15 比較表 */
+      .compare-table { position:absolute; top:320px; left:100px; right:100px; border-collapse:collapse; font-size:34px; }
+      .compare-table th, .compare-table td { padding:24px 32px; border-bottom:1px solid #e7ded0; text-align:left; }
+      .compare-table th { font-size:28px; color:var(--sub); letter-spacing:0.1em; font-weight:400; }
+      .compare-table .col-mine { color:var(--water); font-weight:400; }
+      .compare-table tr:last-child td { border-bottom:none; }
+
+      /* S22 申込ステップ */
+      .apply-steps { position:absolute; top:220px; left:120px; display:flex; flex-direction:column; gap:48px; }
+      .apply-step { display:flex; align-items:center; gap:48px; }
+      .apply-num { width:72px; height:72px; border-radius:50%; background:var(--sun); color:#fff; font-size:36px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-family:sans-serif; }
+      .apply-text { font-size:44px; color:var(--ink); line-height:1.5; }
+
+      /* S11 (人生曲線) */
+      .stage { position:absolute; width:520px; }
+      .stage .era { font-size:24px; color:var(--sub); letter-spacing:0.12em; margin-bottom:8px; }
+      .stage .phrase { font-size:30px; line-height:1.5; color:var(--ink); }
+      .dot { position:absolute; width:26px; height:26px; border-radius:50%; background:var(--sun); transform:translate(-50%,-50%); box-shadow:0 0 0 8px rgba(232,163,61,0.18); }
+      .dot.valley { background:var(--valley); box-shadow:0 0 0 8px rgba(176,122,85,0.16); }
+
+      /* ナビ */
+      #nav {
+        position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+        display:flex; align-items:center; gap:16px;
+        background:rgba(30,30,30,0.75); color:#fff;
+        padding:8px 20px; border-radius:24px; font-family:sans-serif; font-size:14px;
+        user-select:none; z-index:9999;
+      }
+      #nav button {
+        background:none; border:1px solid rgba(255,255,255,0.4); color:#fff;
+        padding:4px 14px; border-radius:12px; cursor:pointer; font-size:16px; transition:background 0.15s;
+      }
+      #nav button:hover { background:rgba(255,255,255,0.15); }
+    </style>
+  </head>
+  <body>
+
+    <script type="application/hyperframes-slideshow+json">
+    {
+      "slides":[
+        {"sceneId":"s3",  "fragments":[]},
+        {"sceneId":"s4",  "fragments":[]},
+        {"sceneId":"s5",  "fragments":[]},
+        {"sceneId":"s55", "fragments":[]},
+        {"sceneId":"s6",  "fragments":[]},
+        {"sceneId":"s7",  "fragments":[]},
+        {"sceneId":"s8",  "fragments":[5.5, 11.0]},
+        {"sceneId":"s9",  "fragments":[]},
+        {"sceneId":"s9q", "fragments":[]},
+        {"sceneId":"s10", "fragments":[4.0, 7.5]},
+        {"sceneId":"s11", "fragments":[4.2, 8.2, 12.2, 16.2, 20.2]},
+        {"sceneId":"s12", "fragments":[]},
+        {"sceneId":"s13", "fragments":[]},
+        {"sceneId":"s14", "fragments":[4.0, 7.5]},
+        {"sceneId":"s15", "fragments":[]},
+        {"sceneId":"s16", "fragments":[]},
+        {"sceneId":"s17", "fragments":[]},
+        {"sceneId":"s18", "fragments":[]},
+        {"sceneId":"s19", "fragments":[]},
+        {"sceneId":"s20", "fragments":[]},
+        {"sceneId":"s21", "fragments":[]},
+        {"sceneId":"s22", "fragments":[]},
+        {"sceneId":"s23", "fragments":[]}
+      ]
+    }
+    </script>
+
+    <div id="presentation-wrapper">
+    <div id="slide-viewport">
+    <div id="slide-scaler">
+
+    <!-- ===== S3 表紙 ===== -->
+    <div class="hf-scene" data-composition-id="s3">
+      <img id="s3-photo" src="images/S3_2.png" style="position:absolute;right:0;top:0;width:55%;height:100%;object-fit:cover;object-position:center"/>
+      <div style="position:absolute;right:44%;top:0;width:200px;height:100%;background:linear-gradient(to right,var(--cream) 0%,transparent 100%);z-index:2"></div>
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360" style="z-index:3">
+        <circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/>
+        <g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7">
+          <line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/>
+          <line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/>
+        </g>
+      </svg>
+      <div id="s3-title" style="position:absolute;top:270px;left:120px;font-size:96px;color:var(--ink);letter-spacing:0.06em;z-index:4">脱おりこうさん</div>
+      <div id="s3-line" style="position:absolute;top:430px;left:120px;width:80px;height:3px;background:var(--sun);transform-origin:left center;z-index:4"></div>
+      <div id="s3-sub" style="position:absolute;top:468px;left:120px;font-size:50px;color:var(--ink);letter-spacing:0.05em;line-height:1.7;z-index:4">
+        頑張ってきたあなたが、<br>そろそろ<span class="em">「どうしたい？」</span>を<br>取り戻す話。
+      </div>
+    </div>
+
+    <!-- ===== S4 注意事項 ===== -->
+    <div class="hf-scene" data-composition-id="s4">
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <img src="images/S2.png" style="position:absolute;right:60px;top:60px;width:780px;height:940px;object-fit:cover;object-position:center;opacity:0.85;border-radius:8px;z-index:1;-webkit-mask-image:linear-gradient(to right, transparent, black 120px, black calc(100% - 120px), transparent),linear-gradient(to bottom, transparent, black 100px, black calc(100% - 100px), transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(to right, transparent, black 120px, black calc(100% - 120px), transparent),linear-gradient(to bottom, transparent, black 100px, black calc(100% - 100px), transparent);mask-composite:intersect">
+      <div id="s4-label" class="slide-label" style="z-index:2">はじめに</div>
+      <div id="s4-title" class="slide-title" style="top:140px;right:860px;z-index:2">「おりこうさん」は<br>悪口じゃありません。</div>
+      <div id="s4-line" class="accent-line" style="top:340px;right:860px;z-index:2"></div>
+      <div id="s4-body" class="slide-body" style="top:380px;right:860px;font-size:42px;z-index:2">
+        責任感があって、誰かのために頑張れる。<br>それは<span class="em-sun">本物の力</span>です。<br><br>
+        ただその力が、<br>自分の人生を後回しにする方向<span style="font-size:34px;color:var(--sub)">だけに</span><br>向いてしまっていないか——<br>
+        今日はそれを一緒に確かめます。
+      </div>
+    </div>
+
+    <!-- ===== S5 本日の目的 ===== -->
+    <div class="hf-scene" data-composition-id="s5">
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <div id="s5-label" class="slide-label">本日の目的</div>
+      <div id="s5-title" class="slide-title">今日、ここに立つゴールは</div>
+      <div id="s5-line" class="accent-line"></div>
+      <div id="s5-body" style="position:absolute;top:348px;left:120px;right:120px;font-size:40px;color:var(--ink);line-height:1.9">
+        ① 「ちゃんと終わってから」になっている自分の<span class="em">パターンに気づく</span><br>
+        ② それは性格ではなく、<span class="em-sun">社会と家庭の重なり</span>が作ったものだと知る<br>
+        ③ <span class="em">今のがんばりを認める</span>・本音・小さく試す——その意味を知る
+      </div>
+    </div>
+
+    <!-- ===== S55 使命 ===== -->
+    <div class="hf-scene" data-composition-id="s55">
+      <img src="images/S55_hatsumi.jpg" style="position:absolute;right:0;top:0;width:46%;height:100%;object-fit:cover;object-position:center top;"/>
+      <div style="position:absolute;right:41%;top:0;width:200px;height:100%;background:linear-gradient(to right,var(--cream) 0%,transparent 100%);z-index:2"></div>
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360" style="z-index:3"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <div class="slide-label" style="z-index:4">使命</div>
+      <div style="position:absolute;top:140px;left:120px;right:57%;font-size:36px;color:var(--sub);letter-spacing:0.1em;z-index:4">なぜ、私がこれをやるのか</div>
+      <div class="accent-line" style="top:208px;z-index:4"></div>
+      <div style="position:absolute;top:248px;left:120px;right:57%;font-size:38px;color:var(--ink);line-height:1.6;z-index:4">
+        ずっと、「ちゃんとやれる自分」で<br>いることが当たり前だった。<br><br>
+        頑張っても、頑張っても——<br>ちゃんと終わってから、は来なかった。
+      </div>
+      <div style="position:absolute;top:640px;left:120px;right:57%;padding-left:28px;border-left:5px solid var(--water);font-size:32px;color:var(--ink);line-height:1.75;z-index:4">
+        <span style="white-space:nowrap">「ちゃんとやってから」じゃなくていい。</span><br>
+        楽しみながらもっとやっていい。<br><br>
+        同じように生きてきた<br>
+        すべてのおりこうさんを、<span class="em">解放したい。</span>
+      </div>
+    </div>
+
+    <!-- ===== S6 実績・権威性 ===== -->
+    <div class="hf-scene" data-composition-id="s6">
+      <img src="images/S55_hatsumi.jpg" style="position:absolute;right:0;top:0;width:46%;height:100%;object-fit:cover;object-position:center top;"/>
+      <div style="position:absolute;right:41%;top:0;width:200px;height:100%;background:linear-gradient(to right,var(--cream) 0%,transparent 100%);z-index:2"></div>
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360" style="z-index:3"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <div id="s6-title" class="slide-title" style="font-size:52px;z-index:4">漢那初美（かんな はつみ）</div>
+      <div id="s6-body" class="slide-body" style="top:280px;font-size:32px;right:54%;z-index:4;line-height:1.75">
+        <span style="font-size:26px;color:var(--sub)">コーチ 10年目　×　現役教員 18年目　×　2人の娘の母</span><br><br>
+        生徒の「やる気」と「やりたいこと」を引き出したくてコーチングを始めた。<br><span class="em-sun">ビジネスも子育ても経験しながら、幅も深みも増して10年目。</span><br><br>
+        仕事も大好き。子育ても大事にしたい。<br>
+        おしゃれもする。<span class="em-sun">フェスにも行く。</span><br><br>
+        やりたい仕事に全力で。<br>休むときは思いっきり。<br>子どものことは、子どもにまかせる。
+      </div>
+    </div>
+
+    <!-- ===== S7 参加者自己開示ワーク ===== -->
+    <div class="hf-scene" data-composition-id="s7">
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <div id="s7-label" class="slide-label">ワーク</div>
+      <div id="s7-title" class="slide-title" style="font-size:64px">あなたの「ちゃんと終わってから」<br>はどんな場面ですか？</div>
+      <div id="s7-line" class="accent-line" style="top:340px"></div>
+      <div id="s7-body" class="slide-body" style="top:380px;font-size:38px;color:var(--sub)">
+        ちょっと思い浮かべてみてください。<br><br>
+        休むのはちゃんと終わってから…<br>
+        楽しむのは、もう少し落ち着いたら…<br>
+        気づいたら、自分のことをやる時間もエネルギーも残っていない…
+      </div>
+    </div>
+
+    <!-- ===== S8a なぜそうなるのか①（入り） ===== -->
+    <div class="hf-scene" data-composition-id="s8a">
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <div class="slide-label">なぜ、そうなるのか</div>
+      <div style="position:absolute;top:220px;left:120px;right:120px">
+        <div style="font-size:56px;color:var(--ink);letter-spacing:0.04em;line-height:1.6">
+          私が頑張れば、丸く収まる。<br>
+          私が我慢すれば、うまくいく。
+        </div>
+        <div style="margin-top:40px;font-size:40px;color:var(--ink);line-height:1.7">
+          そうやって<span class="em-sun">誰かのために動いてきた人</span>ほど、<br>
+          気づけば自分の人生が<span class="em">「全部終わってから」</span>になっている。
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== S8b なぜそうなるのか②（土壌と種） ===== -->
+    <div class="hf-scene" data-composition-id="s8b">
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <div class="slide-label">なぜ、そうなるのか</div>
+      <div style="position:absolute;top:280px;left:120px;right:120px">
+        <div style="display:flex;gap:60px;margin-bottom:36px">
+          <div style="flex:1;background:var(--sun-pale);border-radius:16px;padding:40px">
+            <div style="font-size:26px;color:var(--sub);letter-spacing:0.12em;margin-bottom:16px">土壌：社会構造</div>
+            <div style="font-size:36px;color:var(--ink);line-height:1.6">ずっと「ちゃんとやる人が認められる」社会で生きてきたから</div>
+          </div>
+          <div style="display:flex;align-items:center;font-size:48px;color:var(--sun)">×</div>
+          <div style="flex:1;background:var(--sun-pale);border-radius:16px;padding:40px">
+            <div style="font-size:26px;color:var(--sub);letter-spacing:0.12em;margin-bottom:16px">種：家庭環境</div>
+            <div style="font-size:36px;color:var(--ink);line-height:1.6">「頑張らないと自分には価値がない」<br>と感じる場所で育ったから</div>
+          </div>
+        </div>
+        <div id="s8b-punch" style="font-size:54px;color:var(--ink);text-align:center;margin-top:60px">
+          この2つが重なれば、<span class="em">誰だっておりこうさんになる。</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== S8c なぜそうなるのか③（症状） ===== -->
+    <div class="hf-scene" data-composition-id="s8c">
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <div class="slide-label">なぜ、そうなるのか</div>
+      <div style="position:absolute;top:300px;left:120px;right:120px">
+        <div style="font-size:36px;color:var(--sub);letter-spacing:0.1em;margin-bottom:32px">こんな場面、ありませんか？</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px 80px;font-size:40px;color:var(--ink);line-height:1.6">
+          <div>夫の機嫌を先に読む</div>
+          <div>子どものうまくいかないがずっと気になる</div>
+          <div>本音は爆発するまで言えない</div>
+          <div>休むのは全部終わってから</div>
+        </div>
+        <div style="margin-top:56px;font-size:44px;color:var(--ink);padding:36px 48px;border-left:6px solid var(--water)">
+          これは、あなたが弱いんじゃない。<br>
+          <span class="em">土壌と種が重なった</span>、自然な結果。
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== カタルシス ===== -->
+    <div class="hf-scene" data-composition-id="katharsis">
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 120px;gap:48px">
+        <div style="font-size:56px;color:var(--ink);line-height:1.8;font-weight:bold">
+          誰だって疲れます。<br>
+          <span class="em">エネルギーが残ってなくて、当然です。</span>
+        </div>
+        <div style="font-size:44px;color:var(--sub);line-height:1.6">
+          あなたは十分すぎるほど<br>頑張ってきたから。
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== S9 深刻化 ===== -->
+    <div class="hf-scene" data-composition-id="s9">
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <img src="images/tokei.png" style="position:absolute;right:60px;top:60px;height:940px;object-fit:contain;opacity:0.5;z-index:1;-webkit-mask-image:linear-gradient(to right, transparent, black 120px, black calc(100% - 120px), transparent),linear-gradient(to bottom, transparent, black 100px, black calc(100% - 100px), transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(to right, transparent, black 120px, black calc(100% - 120px), transparent),linear-gradient(to bottom, transparent, black 100px, black calc(100% - 100px), transparent);mask-composite:intersect">
+      <div id="s9-label" class="slide-label" style="z-index:2">このまま続くと</div>
+      <div id="s9-body" style="position:absolute;top:160px;left:120px;right:120px;font-size:40px;color:var(--ink);line-height:1.8;z-index:2">
+        「ちゃんと終わったら楽しもう」のまま、<br>
+        時間が過ぎていく。<br><br>
+        一番取り戻せないのは、<span class="em-valley">時間</span>。<br>
+        人生は、「ちゃんと終わってから」では、終わっちゃう。<br><br>
+        子どもに「好きなことをしていい」と言いながら、<br>
+        <span style="color:var(--valley)">苦しそうな背中で逆を伝えてしまう。</span>
+      </div>
+    </div>
+
+    <!-- ===== S9q 問い ===== -->
+    <div class="hf-scene" data-composition-id="s9q">
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-size:60px;color:var(--ink);letter-spacing:0.05em;line-height:1.7">
+        <div>ちゃんとやり終えたら——</div>
+        <div><span class="em">それって、いつになりそう？</span></div>
+      </div>
+    </div>
+
+    <!-- ===== S10 解決策 ===== -->
+    <div class="hf-scene" data-composition-id="s10">
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <div id="s10-label" class="slide-label">脱おりこうさん 3つのステップ</div>
+      <div id="s10-intro" style="position:absolute;top:120px;left:120px;font-size:44px;color:var(--sub)">もっと頑張るのではなく、<span style="color:var(--ink)">「今のがんばりを認める」から始める。</span></div>
+      <div class="step-list" style="top:240px">
+        <div id="s10-s1" class="step-item">
+          <div class="step-num">①</div>
+          <div class="step-text">生きてるだけで<span class="em">〇</span>を、体で納得できる土台をつくる<div class="step-sub">存在価値を、「ちゃんとやった」という評価から切り離す。</div></div>
+        </div>
+        <div id="s10-s2" class="step-item">
+          <div class="step-num">②</div>
+          <div class="step-text">本音を見つけて、<span class="em">「私はどうしたい？」</span>を取り戻す<div class="step-sub">評価でも義務でもなく、自分の感覚に戻る。</div></div>
+        </div>
+        <div id="s10-s3" class="step-item">
+          <div class="step-num">③</div>
+          <div class="step-text">「私の心はどう感じてる？」を<span class="em">小さく試す</span><div class="step-sub">一気に変えなくていい。今日一つ、試してみる。</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== S11 開発秘話（人生曲線）===== -->
+    <div class="hf-scene" data-composition-id="s11">
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <div style="position:absolute;top:78px;left:120px;font-size:34px;color:var(--sub);letter-spacing:0.1em">開発秘話　│　なぜ、私がこれをやるのか</div>
+      <div style="position:absolute;inset:0;transform:translateY(-30px) scale(0.82);transform-origin:top center;">
+        <svg viewBox="0 0 1920 1080" style="position:absolute;inset:0;width:1920px;height:1080px">
+          <path d="M 120,600 C 260,590 360,370 460,400 C 560,430 600,880 640,880 C 720,880 830,560 870,560 C 910,560 1060,820 1100,820 C 1140,820 1300,370 1360,380 S 1580,260 1680,270 L 1820,270" fill="none" stroke="#e7ded0" stroke-width="6" stroke-linecap="round"/>
+          <path id="curve-bright" d="M 120,600 C 260,590 360,370 460,400 C 560,430 600,880 640,880 C 720,880 830,560 870,560 C 910,560 1060,820 1100,820 C 1140,820 1300,370 1360,380 S 1580,260 1680,270 L 1820,270" fill="none" stroke="var(--sun)" stroke-width="7" stroke-linecap="round"/>
+          <circle cx="120" cy="600" r="21" fill="rgba(232,163,61,0.18)"/>
+          <circle cx="460" cy="400" r="21" fill="rgba(232,163,61,0.18)"/>
+          <circle cx="640" cy="880" r="21" fill="rgba(176,122,85,0.16)"/>
+          <circle cx="870" cy="560" r="21" fill="rgba(232,163,61,0.18)"/>
+          <circle cx="1100" cy="820" r="21" fill="rgba(176,122,85,0.16)"/>
+          <circle cx="1360" cy="380" r="21" fill="rgba(232,163,61,0.18)"/>
+          <circle cx="1680" cy="270" r="21" fill="rgba(232,163,61,0.18)"/>
+          <circle id="dot-1" cx="120" cy="600" r="13" fill="var(--sun)"/>
+          <circle id="dot-2" cx="460" cy="400" r="13" fill="var(--sun)"/>
+          <circle id="dot-3" cx="640" cy="880" r="13" fill="var(--valley)"/>
+          <circle id="dot-3b" cx="870" cy="560" r="13" fill="var(--sun)"/>
+          <circle id="dot-4" cx="1100" cy="820" r="13" fill="var(--valley)"/>
+          <circle id="dot-5" cx="1360" cy="380" r="13" fill="var(--sun)"/>
+          <circle id="dot-6" cx="1680" cy="270" r="13" fill="var(--sun)"/>
+        </svg>
+        <div id="stage-1" class="stage" style="left:120px;top:650px;width:400px"><div class="era">幼少期 〜 小学生</div><div class="phrase">「良い子でいれば、<br/>居場所がある」</div></div>
+        <div id="stage-2" class="stage" style="left:280px;top:210px;width:500px"><div class="era">高校</div><div class="phrase">人をつなぎ、場を創るよろこび。<br/>でも、人との距離感に迷う。</div></div>
+        <div id="stage-3" class="stage" style="left:430px;top:910px;width:400px"><div class="era">24歳【谷①】</div><div class="phrase">母から「お金を貸して」が続く。支援できない私は、優しくない、と思っていた。</div></div>
+        <div id="stage-3b" class="stage" style="left:690px;top:390px;width:370px"><div class="era">30歳</div><div class="phrase">母との関係に、<br/>答えを見つける。</div></div>
+        <div id="stage-4" class="stage" style="left:920px;top:850px;width:480px"><div class="era">33歳ごろ【谷②】</div><div class="phrase">教員なのに子育ての理想に届かない。知っているのに、できない。</div></div>
+        <div id="stage-5" class="stage" style="left:1180px;top:210px;width:510px"><div class="era">転機</div><div class="phrase">クライアントとして5年。<br/>「こうするべき」を手放していく。</div></div>
+        <div id="stage-6" class="stage" style="left:1510px;top:290px;width:360px;text-align:right"><div class="era">今、そして未来</div><div class="phrase">フリーランスコーチ<br/>× 現役教員<br/>× 2人の娘の母</div></div>
+      </div>
+      <div id="punchline" style="position:absolute;left:0;right:0;bottom:72px;text-align:center;font-size:36px;color:var(--ink);letter-spacing:0.04em;white-space:nowrap">── 2つの谷を越えて、「こうしなくちゃ」から「どうしたい？」へ。私は、この道を通ってきた。</div>
+    </div>
+
+    <!-- ===== S12 価格アンカリング ===== -->
+    <div class="hf-scene" data-composition-id="s12">
+      <video style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.25;z-index:0" autoplay muted loop playsinline>
+        <source src="images/S7.mp4" type="video/mp4">
+      </video>
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <div id="s12-label" class="slide-label">「後回しのコスト」を考えてみましょう</div>
+      <div id="s12-title" class="slide-title">本当のコストは何か</div>
+      <div id="s12-line" class="accent-line"></div>
+      <div id="s12-body" class="slide-body" style="font-size:42px">
+        今日と1年後も、<span class="em-valley">「ちゃんと終わってから」のまま</span>だとしたら？<br><br>
+        失われ続けるのは——<br>
+        <span style="font-size:36px;color:var(--ink);line-height:2">
+          　時間　／　エネルギー　／　自分の人生を楽しむ力
+        </span><br>
+        一番取り戻せないのは、<span class="em-valley">時間</span>。<br><br>
+        そのコストと比べたとき、<br>
+        今、<span class="em">踏み出すコスト</span> は？
+      </div>
+    </div>
+
+    <!-- ===== S13 サービス体系 ===== -->
+    <div class="hf-scene" data-composition-id="s13">
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <div id="s13-label" class="slide-label">脱おりこうさんコーチング</div>
+      <div id="s13-title" class="slide-title">3ステップの具体的な内容</div>
+      <div id="s13-line" class="accent-line"></div>
+      <div id="s13-body" class="slide-body" style="font-size:38px">
+        ① 過去完了ワーク ＋ <span class="em">毎日の秘密のワーク</span><br>
+        ② コーチング・ソウルカラーセラピー・ライフツリーカードを<br>
+        　　<span class="em-sun">あなただけの配合で</span>組み合わせた5回<br>
+        ③ 成長の足跡シート（毎回）<br><br>
+        <span class="em-sun">隔週1回 × 3ヶ月 ＝ 計6回</span>　マンツーマン・オンライン<br>
+        セッション時間：<span style="color:var(--ink)">90分</span>　／　毎日のワーク<br><br>
+      </div>
+    </div>
+
+    <!-- ===== S14 お客様の声 ===== -->
+    <div class="hf-scene" data-composition-id="s14">
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <div id="s14-label" class="slide-label">お客様の声</div>
+      <div id="s14-title" style="position:absolute;top:100px;left:120px;font-size:52px;color:var(--ink);letter-spacing:0.04em">実際に変わった方たちの声</div>
+      <div class="testimony-grid">
+        <div id="s14-c1" class="testimony-card">
+          <div style="display:flex;align-items:center;gap:18px;margin-bottom:14px">
+            <img src="images/client1.png" style="width:120px;height:120px;border-radius:50%;object-fit:cover;object-position:center top;flex-shrink:0;border:3px solid var(--sun-soft)">
+            <div><div style="font-size:28px;font-weight:600;color:var(--ink)">ゆみさん</div><div style="font-size:20px;color:var(--sub);margin-top:4px">30代・公務員</div></div>
+          </div>
+          <div class="tc-label">Before</div>
+          <div class="tc-text" style="font-size:26px">自分と他人を比較してしまって、なかなか自分を認められない。真面目、優等生、失敗を怖がる。他人の顔色を伺う。</div>
+          <div class="tc-label">After</div>
+          <div class="tc-after" style="font-size:26px">自分の意見も大事にする人です。<br>自分を大事にし、周りを大事にする人です。<br>やりたいこと、かなえたい事をマイペースに叶えていく人です。<br><span class="em">くろい自分があることも認める人です。笑いながら、前に前に人生を楽しんで行く人です。</span></div>
+        </div>
+        <div id="s14-c2" class="testimony-card" style="opacity:0">
+          <div style="display:flex;align-items:center;gap:18px;margin-bottom:14px">
+            <img src="images/client2.png" style="width:120px;height:120px;border-radius:50%;object-fit:cover;object-position:center top;flex-shrink:0;border:3px solid var(--sun-soft)">
+            <div><div style="font-size:28px;font-weight:600;color:var(--ink)">ようこさん</div><div style="font-size:20px;color:var(--sub);margin-top:4px">50代・主婦</div></div>
+          </div>
+          <div class="tc-label">Before</div>
+          <div class="tc-text" style="font-size:26px">人を支えることが自分の役割だと思っている人。自身のやりたいことは、どこかで諦めている人。</div>
+          <div class="tc-label">After</div>
+          <div class="tc-after" style="font-size:26px">与えられた自分の人生（時間）を最大限に謳歌する。<br>人は人、例え親であったとしても、自分と親の人生は異なる。<br><span class="em">自分の土台をしっかりと築くことで、ゆとりをもって人助けができる。</span></div>
+        </div>
+        <div id="s14-c3" class="testimony-card" style="opacity:0">
+          <div style="display:flex;align-items:center;gap:18px;margin-bottom:14px">
+            <img src="images/client3.png" style="width:120px;height:120px;border-radius:50%;object-fit:cover;object-position:center top;flex-shrink:0;border:3px solid var(--sun-soft)">
+            <div><div style="font-size:28px;font-weight:600;color:var(--ink)">みぃさん</div><div style="font-size:20px;color:var(--sub);margin-top:4px">30代・個人事業主</div></div>
+          </div>
+          <div class="tc-label">Before</div>
+          <div class="tc-text" style="font-size:26px">本音で話をしようとすると、涙がでてしまう。人目を気にしすぎて自分の意見が言えない。夜寝る前に<span style="color:var(--valley)">1人反省会</span>が始まってしまう。</div>
+          <div class="tc-label">After</div>
+          <div class="tc-after" style="font-size:26px"><span class="em">寝る前の毎日のワークで、自分のことを好きになって認めてあげることができるようになった。</span><br>落ち込んでも、毎日のワークをしてちゃんと戻ってこれるようになった。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== S15 比較表 ===== -->
+    <div class="hf-scene" data-composition-id="s15">
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <div id="s15-label" class="slide-label">他のアプローチとの違い</div>
+      <div id="s15-title" class="slide-title" style="font-size:56px">なぜ「脱おりこうさんコーチング」なのか</div>
+      <table id="s15-table" class="compare-table">
+        <tr><th></th><th>癒し系・共感系<br><small style="font-weight:normal;opacity:0.65">カウンセリング・占い・傾聴</small></th><th>行動管理・正論系<br><small style="font-weight:normal;opacity:0.65">目標達成型コーチング<br>自己啓発セミナー</small></th><th class="col-mine">脱おりこうさん</th></tr>
+        <tr><td>アプローチ</td><td>話を聞く・共感する</td><td>行動を変える</td><td class="col-mine">今のがんばりを認めるところから</td></tr>
+        <tr><td>対象</td><td>感情の癒し</td><td>行動パターンの修正</td><td class="col-mine">根っこの「おりこうさん」を解く</td></tr>
+        <tr><td>効果</td><td>一時的な安心感</td><td>表面的な変化</td><td class="col-mine">本音が取り戻せる・長続きする</td></tr>
+      </table>
+    </div>
+
+    <!-- ===== S16 特典 ===== -->
+    <div class="hf-scene" data-composition-id="s16">
+      <img src="images/tokuten.png" style="position:absolute;right:60px;top:60px;width:720px;height:940px;object-fit:cover;object-position:center top;opacity:0.88;border-radius:8px;z-index:1;-webkit-mask-image:linear-gradient(to right, transparent, black 120px, black calc(100% - 120px), transparent),linear-gradient(to bottom, transparent, black 100px, black calc(100% - 100px), transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(to right, transparent, black 120px, black calc(100% - 120px), transparent),linear-gradient(to bottom, transparent, black 100px, black calc(100% - 100px), transparent);mask-composite:intersect">
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <div id="s16-label" class="slide-label">特典</div>
+      <div id="s16-title" class="slide-title">今日お申し込みの方限定</div>
+      <div id="s16-line" class="accent-line"></div>
+      <div id="s16-body" class="slide-body" style="font-size:44px;right:860px;z-index:2">
+        <span class="em-sun">特典：</span>「わたし専用AIのつくりかた」<br>
+        　　　オリジナル動画講座　<span style="font-size:32px;color:var(--sub)">プレゼント</span><br><br>
+        <span style="font-size:34px;color:var(--ink);line-height:1.8">
+          AIを自分の伴走者として使いこなす方法を<br>
+          動画で丸ごとお渡しします。
+        </span><br><br>
+        <span style="font-size:36px;color:var(--valley);letter-spacing:0.08em">先着 3 名限定　／　本日のみ</span>
+      </div>
+    </div>
+
+    <!-- ===== S17 Q&A ===== -->
+    <div class="hf-scene" data-composition-id="s17">
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <div id="s17-label" class="slide-label">よくある疑問</div>
+      <div id="s17-title" class="slide-title" style="font-size:56px">「でも…」という声にお答えします</div>
+      <div id="s17-line" class="accent-line"></div>
+      <div id="s17-body" class="slide-body" style="font-size:38px;top:360px">
+        <span class="em-sun">Q. わがままになりそうで怖い</span><br>
+        →「どうしたい？」を知ることは、わがままとは違います。<br>
+        自分の本音を知るからこそ、人にも誠実でいられる。<br><br>
+        <span class="em-sun">Q. 罪悪感が出てきそう</span><br>
+        →それは、自分の価値を「ちゃんとやったかどうか」で測ってきたサインです。<br>
+        ①のステップで、一緒にほどいていきます。
+      </div>
+    </div>
+
+    <!-- ===== S18 メッセージ ===== -->
+    <div class="hf-scene" data-composition-id="s18">
+      <img src="images/S18_petals.png" style="position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:0.18;"/>
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360" style="z-index:3"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <!-- Ghost watermark -->
+      <div class="ghost" style="bottom:-40px;left:-20px;opacity:0.6;z-index:3">楽しむ</div>
+      <div id="s18-body" style="position:absolute;top:180px;left:160px;right:160px;font-size:56px;color:var(--ink);line-height:2.0;letter-spacing:0.04em;z-index:4">
+        頑張ることは、<br>当たり前に教わってきた。<br><br>
+        でも、<span class="em">楽しむことも人生に必要だ</span>とは、<br>
+        誰も教えてくれなかった。<br><br>
+      </div>
+    </div>
+
+    <!-- ===== S19 特別価格 ===== -->
+    <div class="hf-scene" data-composition-id="s19">
+      <img src="images/S2.png" style="position:absolute;right:40px;top:80px;width:860px;height:860px;object-fit:cover;object-position:center center;opacity:0.82;border-radius:8px;z-index:1;-webkit-mask-image:linear-gradient(to right, transparent, black 140px, black calc(100% - 80px), transparent),linear-gradient(to bottom, transparent, black 100px, black calc(100% - 100px), transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(to right, transparent, black 140px, black calc(100% - 80px), transparent),linear-gradient(to bottom, transparent, black 100px, black calc(100% - 100px), transparent);mask-composite:intersect">
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <div id="s19-label" class="slide-label" style="z-index:2">特別価格</div>
+      <div id="s19-title" class="slide-title" style="z-index:2">最初の一歩を選びやすく</div>
+      <div id="s19-line" class="accent-line" style="z-index:2"></div>
+      <div id="s19-body" class="slide-body" style="font-size:44px;right:860px;z-index:2">
+        通常価格：<span style="color:var(--sub);text-decoration:line-through">¥ 350,000</span><br><br>
+        本日限り特別価格：<span class="em-sun" style="font-size:72px;font-family:sans-serif">¥ 300,000</span><br><br>
+        <span style="font-size:32px;color:var(--ink)">
+          隔週90分 × 計6回　毎日ワーク　毎回振り返りシート付き<br>
+          クレジットカード払い可
+        </span>
+      </div>
+    </div>
+
+    <!-- ===== S20 ヒーローズジャーニー② ===== -->
+    <div class="hf-scene" data-composition-id="s20">
+      <img src="images/beach1.png" style="position:absolute;right:40px;top:0;width:900px;height:1080px;object-fit:cover;object-position:center center;opacity:0.80;z-index:1;-webkit-mask-image:linear-gradient(to right, transparent, black 160px, black calc(100% - 60px), transparent),linear-gradient(to bottom, transparent, black 80px, black calc(100% - 80px), transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(to right, transparent, black 160px, black calc(100% - 60px), transparent),linear-gradient(to bottom, transparent, black 80px, black calc(100% - 80px), transparent);mask-composite:intersect">
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <div id="s20-title" class="slide-title" style="font-size:56px;top:80px;z-index:2">課題を返すことは、<br>見捨てることではなかった</div>
+      <div id="s20-line" class="accent-line" style="top:240px;z-index:2"></div>
+      <div id="s20-body" class="slide-body" style="top:270px;font-size:36px;right:920px;z-index:2">
+        母の課題を引き受けない私は、優しくないと思っていた。<br>
+        でも、存在価値を「役に立つこと」だけに置くのをやめたとき、<br>
+        母も自分の人生に責任を持つようになった。<br><br>
+        <span class="em">課題を相手に返すことは、<br>見捨てることではない。</span><br>
+        双方が、自分の人生に戻ること。<br><br>
+        私の話をしました。<br>
+        <span style="font-size:46px">でも、この構造は——<span class="em-sun">私だけじゃない。</span></span>
+      </div>
+    </div>
+
+    <!-- ===== S21 最終価格 ===== -->
+    <div class="hf-scene" data-composition-id="s21">
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <div id="s21-label" class="slide-label">今日、「ちゃんと終わってから」を卒業する</div>
+      <div id="s21-title" class="slide-title">最終確認</div>
+      <div id="s21-line" class="accent-line"></div>
+      <div id="s21-body" class="slide-body" style="font-size:44px">
+        ご参加費：<span class="em-sun" style="font-size:72px;font-family:sans-serif">¥ 300,000</span>（税込）<br><br>
+        <span style="font-size:34px;color:var(--ink);line-height:1.9">
+          ✦ 90分セッション × 計6回（隔週）<br>
+          ✦ 毎日のワーク<br>
+          ✦ 期間中LINEでの質問し放題<br>
+          ✦ 毎回振り返りシート<br>
+          ✦ 特典：「わたし専用AIのつくりかた」動画講座<br>
+          ✦ クレジットカード払い可
+        </span>
+      </div>
+    </div>
+
+    <!-- ===== S22 個別相談 ===== -->
+    <div class="hf-scene" data-composition-id="s22">
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <div class="slide-label">次のステップ</div>
+      <div class="slide-title" style="font-size:56px">まずは、話してみよう<span style="font-size:36px;color:var(--water);margin-left:24px">（無料）</span></div>
+      <div class="accent-line" style="top:280px"></div>
+      <div class="apply-steps" style="top:320px">
+        <div class="apply-step"><div class="apply-num">1</div><div class="apply-text">LINEに「相談したい」と送る<br><span style="font-size:28px;color:var(--ink);font-weight:600">かんなはつみ｜脱おりこうさんコーチング</span><br><span style="font-size:28px;color:var(--sub)">lin.ee/yXqsWan</span></div><img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://lin.ee/yXqsWan" style="width:180px;height:180px;border-radius:8px;margin-left:32px;flex-shrink:0;" alt="LINE QR"></div>
+        <div class="apply-step"><div class="apply-num">2</div><div class="apply-text">日程調整（オンライン・約45分）</div></div>
+        <div class="apply-step"><div class="apply-num">3</div><div class="apply-text">個別相談　今の状況をじっくり聞かせてください</div></div>
+      </div>
+    </div>
+
+    <!-- ===== S23 クロージング ===== -->
+    <div class="hf-scene" data-composition-id="s23">
+      <img src="images/S23_closing.png" style="position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;object-position:center;"/>
+      <div style="position:absolute;left:0;top:0;width:65%;height:100%;background:linear-gradient(to right,var(--cream) 35%,rgba(250,247,240,0.85) 55%,transparent 100%);z-index:2"></div>
+      <svg class="sun-svg" width="360" height="360" viewBox="0 0 360 360" style="z-index:3"><circle cx="180" cy="180" r="70" fill="var(--sun-soft)" opacity="0.55"/><g stroke="var(--sun-soft)" stroke-width="6" stroke-linecap="round" opacity="0.7"><line x1="180" y1="60" x2="180" y2="20"/><line x1="262" y1="98" x2="290" y2="70"/><line x1="300" y1="180" x2="340" y2="180"/><line x1="262" y1="262" x2="290" y2="290"/><line x1="98" y1="262" x2="70" y2="290"/></g></svg>
+      <div id="s23-body" style="position:absolute;top:220px;left:120px;font-size:56px;color:var(--ink);line-height:2.0;letter-spacing:0.05em;z-index:4">
+        あなたは、もう十分<br>頑張ってきた。<br><br>
+        今日から、<span class="em">「どうしたい？」</span>で<br>
+        生き始めていい。<br><br>
+        <span style="font-size:36px;color:var(--sub)">自分の人生を、自分の手の中に。</span>
+      </div>
+    </div>
+
+    </div><!-- /slide-scaler -->
+    </div><!-- /slide-viewport -->
+    </div><!-- /presentation-wrapper -->
+
+    <!-- ナビゲーション -->
+    <div id="nav">
+      <button id="btn-prev" onclick="prevStep()">←</button>
+      <span id="slide-counter">1 / 22</span>
+      <button id="btn-next" onclick="nextStep()">→</button>
+    </div>
+
+    <!-- GSAP -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+
+    <script>
+    window.__timelines = window.__timelines || {};
+
+    // ── S3 表紙アニメーション（表紙のみ。他のスライドは即時表示） ──
+    (function(){
+      const tl = gsap.timeline({ paused: true });
+      window.__timelines["s3"] = tl;
+      ["#s3-photo","#s3-title","#s3-line","#s3-sub","#s3-cap"].forEach(s => tl.set(s,{opacity:0,y:20},0));
+      tl.set("#s3-line",{scaleX:0,transformOrigin:"left center"},0);
+      tl.to("#s3-photo", {opacity:1,y:0,duration:1.4,ease:"power2.out"},0);
+      tl.to("#s3-title", {opacity:1,y:0,duration:0.8,ease:"power2.out"},0.5);
+      tl.to("#s3-line",  {opacity:1,scaleX:1,duration:0.6,ease:"power2.out"},1.1);
+      tl.to("#s3-sub",   {opacity:1,y:0,duration:0.9,ease:"power2.out"},1.3);
+      tl.to("#s3-cap",   {opacity:1,y:0,duration:0.8,ease:"power2.out"},2.3);
+    })();
+
+    // ── S11 人生曲線（ボタンで1ステージずつ表示） ──
+    // カーブはスライド表示時から全体表示。ドット＋ステージはボタンで段階的に出す。
+    </script>
+
+    <!-- ===== スライドショーコントローラー ===== -->
+    <script>
+    // frags = フラグメント数（0なら全要素即表示）
+    const SLIDES = [
+      {id:"s3",  frags:0}, {id:"s4",  frags:0}, {id:"s5",  frags:0},
+      {id:"s55", frags:0}, {id:"s6",  frags:0}, {id:"s7",  frags:0},
+      {id:"s9q", frags:0}, {id:"s9",  frags:0},
+      {id:"s8a", frags:0}, {id:"s8b", frags:1}, {id:"s8c", frags:0}, {id:"katharsis", frags:0},
+      {id:"s10", frags:3},
+      {id:"s11", frags:7}, {id:"s12", frags:0}, {id:"s13", frags:0},
+      {id:"s14", frags:3}, {id:"s15", frags:0}, {id:"s16", frags:0},
+      {id:"s17", frags:0}, {id:"s18", frags:0}, {id:"s19", frags:0},
+      {id:"s20", frags:0}, {id:"s21", frags:0}, {id:"s22", frags:4},
+      {id:"s23", frags:0}
+    ];
+
+    const E = (sel) => document.querySelector(sel);
+
+    // CSSトランジションで要素を表示（GSAPのtickerに依存しない）
+    function hideEl(sel) {
+      const el = E(sel);
+      if (!el) return;
+      el.style.transition = 'none';
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+    }
+
+    function fadeIn(sel, dur) {
+      const el = E(sel);
+      if (!el) return;
+      el.style.transition = `opacity ${dur}s ease-out, transform ${dur}s ease-out`;
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
+    }
+
+    // フラグメントスライドに入ったとき、非表示に戻す要素リスト
+    const resetMap = {
+
+      s8b: ['#s8b-punch'],
+      s10: ['#s10-s1','#s10-s2','#s10-s3'],
+      s11: ['#stage-1','#stage-2','#stage-3','#stage-3b','#stage-4','#stage-5','#stage-6','#punchline'],
+      s14: ['#s14-c1','#s14-c2','#s14-c3'],
+      s22: ['#s22-a1','#s22-a2','#s22-a3','#s22-a4'],
+    };
+
+    // 各フラグメントの具体的なアニメーション（CSS transition使用）
+    const fragActions = {
+
+      s8b: [
+        () => fadeIn('#s8b-punch', 0.7),
+      ],
+      s11: [
+        () => { gsap.to("#dot-1",{opacity:1,scale:1,duration:0.5,ease:"back.out(2)"}); fadeIn('#stage-1',0.6); },
+        () => { gsap.to("#dot-2",{opacity:1,scale:1,duration:0.5,ease:"back.out(2)"}); fadeIn('#stage-2',0.6); },
+        () => { gsap.to("#dot-3",{opacity:1,scale:1,duration:0.5,ease:"back.out(2)"}); fadeIn('#stage-3',0.6); },
+        () => { gsap.to("#dot-3b",{opacity:1,scale:1,duration:0.5,ease:"back.out(2)"}); fadeIn('#stage-3b',0.6); },
+        () => { gsap.to("#dot-4",{opacity:1,scale:1,duration:0.5,ease:"back.out(2)"}); fadeIn('#stage-4',0.6); },
+        () => { gsap.to("#dot-5",{opacity:1,scale:1,duration:0.5,ease:"back.out(2)"}); fadeIn('#stage-5',0.6); },
+        () => { gsap.to("#dot-6",{opacity:1,scale:1,duration:0.5,ease:"back.out(2)"}); fadeIn('#stage-6',0.6); fadeIn('#punchline',0.8); },
+      ],
+      s10: [
+        () => fadeIn('#s10-s1', 0.7),
+        () => fadeIn('#s10-s2', 0.7),
+        () => fadeIn('#s10-s3', 0.7),
+      ],
+      s14: [
+        () => fadeIn('#s14-c1', 0.7),
+        () => fadeIn('#s14-c2', 0.7),
+        () => fadeIn('#s14-c3', 0.7),
+      ],
+      s22: [
+        () => fadeIn('#s22-a1', 0.7),
+        () => fadeIn('#s22-a2', 0.7),
+        () => fadeIn('#s22-a3', 0.7),
+        () => fadeIn('#s22-a4', 0.7),
+      ],
+    };
+
+    let cur = 0, frag = -1;
+
+    function showSlide(idx) {
+      document.querySelectorAll(".hf-scene").forEach(el => el.classList.remove("active"));
+      const s = SLIDES[idx];
+      E(`[data-composition-id="${s.id}"]`).classList.add("active");
+      cur = idx; frag = -1;
+
+      // フラグメント要素を非表示にリセット（CSS直接操作）
+      if (resetMap[s.id]) {
+        resetMap[s.id].forEach(sel => {
+          const el = E(sel);
+          if (el) { el.style.transition = 'none'; el.style.opacity = '0'; el.style.transform = 'translateY(20px)'; }
+        });
+      }
+      // S11はドットをGSAPでリセット（スケール0・透明）
+      if (s.id === 's11') {
+        ['#dot-1','#dot-2','#dot-3','#dot-4','#dot-5','#dot-6'].forEach(sel => gsap.set(sel, {opacity:0, scale:0}));
+      }
+      // S3はカバーアニメーションを再生
+      if (s.id === 's3' && window.__timelines.s3) {
+        window.__timelines.s3.restart();
+      }
+
+      updateCounter();
+    }
+
+    function nextStep() {
+      const s = SLIDES[cur];
+      if (frag + 1 < s.frags) {
+        frag++;
+        const actions = fragActions[s.id];
+        if (actions && actions[frag]) actions[frag]();
+      } else if (cur < SLIDES.length - 1) {
+        showSlide(cur + 1);
+      }
+      updateCounter();
+    }
+
+    function prevStep() {
+      if (frag >= 0) {
+        showSlide(cur); // フラグメントをリセットして最初から
+      } else if (cur > 0) {
+        showSlide(cur - 1);
+      }
+      updateCounter();
+    }
+
+    function updateCounter() {
+      const fragPart = frag >= 0 ? `-${frag+1}` : "";
+      document.getElementById("slide-counter").textContent = `${cur+1}${fragPart} / ${SLIDES.length}`;
+    }
+
+    function resizeSlides() {
+      const wrapper  = document.getElementById("presentation-wrapper");
+      const viewport = document.getElementById("slide-viewport");
+      const scaler   = document.getElementById("slide-scaler");
+      const rect = wrapper.getBoundingClientRect();
+      const scale = Math.min(rect.width / 1920, rect.height / 1080);
+      viewport.style.width  = (1920 * scale) + "px";
+      viewport.style.height = (1080 * scale) + "px";
+      scaler.style.transform = `scale(${scale})`;
+    }
+
+    window.addEventListener("resize", resizeSlides);
+    requestAnimationFrame(resizeSlides);
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); nextStep(); }
+      if (e.key === "ArrowLeft")                   { e.preventDefault(); prevStep(); }
+    });
+
+    showSlide(0);
+    </script>
+  <!-- ===== キラキラパーティクル ===== -->
+    <script>
+    (function(){
+      const canvas = document.createElement('canvas');
+      canvas.width = 1920; canvas.height = 1080;
+      canvas.style.cssText = 'position:absolute;top:0;left:0;width:1920px;height:1080px;pointer-events:none;z-index:9000;';
+      document.getElementById('slide-scaler').appendChild(canvas);
+      const ctx = canvas.getContext('2d');
+
+      const COLORS = ['#e8a33d','#f2c889','#e8c46d','#fbeacb','#fff4dc','#ffffff'];
+      const N = 130;
+
+      function mk(boot) {
+        return {
+          x: Math.random() * 1920,
+          y: boot ? Math.random() * 1080 : 1110,
+          vx: (Math.random() - 0.5) * 0.65,
+          vy: -(Math.random() * 0.6 + 0.35),
+          r: Math.random() * 3.8 + 1.2,
+          alpha: 0,
+          aMax: Math.random() * 0.6 + 0.22,
+          color: COLORS[Math.floor(Math.random() * COLORS.length)],
+          age: 0,
+          life: Math.floor(Math.random() * 600 + 500),
+          star: Math.random() > 0.42,
+          rot: Math.random() * Math.PI * 2,
+          rotV: (Math.random() - 0.5) * 0.025,
+          sway: Math.random() * 0.022 + 0.008,
+          swayOff: Math.random() * Math.PI * 2,
+        };
+      }
+
+      function drawStar4(r) {
+        ctx.beginPath();
+        for (let i = 0; i < 8; i++) {
+          const a = (i * Math.PI) / 4 - Math.PI / 2;
+          const d = i % 2 === 0 ? r : r * 0.32;
+          i === 0 ? ctx.moveTo(Math.cos(a)*d, Math.sin(a)*d)
+                  : ctx.lineTo(Math.cos(a)*d, Math.sin(a)*d);
+        }
+        ctx.closePath();
+      }
+
+      const pts = Array.from({length: N}, () => mk(true));
+
+      function frame() {
+        ctx.clearRect(0, 0, 1920, 1080);
+        pts.forEach((p, i) => {
+          p.age++;
+          p.x += p.vx + Math.sin(p.age * p.sway + p.swayOff) * 0.55;
+          p.y += p.vy;
+          p.rot += p.rotV;
+          const t = p.age / p.life;
+          p.alpha = t < 0.15 ? p.aMax * (t / 0.15)
+                   : t > 0.75 ? p.aMax * ((1 - t) / 0.25)
+                   : p.aMax;
+          if (p.age >= p.life || p.y < -15) { pts[i] = mk(false); return; }
+          const pulse = 0.88 + 0.12 * Math.sin(p.age * 0.1 + p.swayOff);
+          ctx.save();
+          ctx.globalAlpha = p.alpha;
+          ctx.fillStyle = p.color;
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.scale(pulse, pulse);
+          if (p.star) {
+            ctx.shadowColor = p.color;
+            ctx.shadowBlur = p.r * 4;
+            drawStar4(p.r);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+          } else {
+            ctx.beginPath();
+            ctx.arc(0, 0, p.r, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+        });
+        requestAnimationFrame(frame);
+      }
+      frame();
+    })();
+    </script>
+
+  </body>
+</html>
