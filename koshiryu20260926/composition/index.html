@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920, height=1080" />
+<title>子竜さん合宿20260926 脱おりこうさん20分発表</title>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --paper:#faf7f0; --ink:#2b2b2b; --ink-quiet:#7a736a; --hair:#e6dfd2;
+  --sea:#5bbfbf; --sea-deep:#3a9e9e; --gold:#e8a33d; --earth:#b07a55;
+  --mincho:"Hiragino Mincho ProN","YuMincho",serif;
+  --gothic:"YuGothic","Hiragino Sans",sans-serif;
+}
+html,body{width:1920px;height:1080px;overflow:hidden;background:var(--paper);font-family:var(--mincho)}
+.slide-all *{line-break:strict;text-align:left}
+.scene{position:absolute;inset:0;width:1920px;height:1080px;overflow:hidden;opacity:0;visibility:hidden;pointer-events:none;background:var(--paper);color:var(--ink)}
+.label{font-family:var(--gothic);font-weight:500;font-size:22px;letter-spacing:.16em;color:var(--ink-quiet)}
+.gold-label{color:var(--gold)}
+.hair{width:64px;height:1px;background:var(--ink-quiet);opacity:.5;margin:8px 0}
+.hair.vertical{width:1px;height:280px;margin:0 64px}
+.headline{font-family:var(--mincho);font-weight:300;font-size:64px;line-height:1.6;letter-spacing:.06em;margin-top:8px}
+.headline.small{font-size:44px;line-height:1.55}
+.body{font-family:var(--mincho);font-weight:300;font-size:36px;line-height:1.9;letter-spacing:.04em;color:var(--ink)}
+.note{font-family:var(--mincho);font-weight:300;font-size:28px;line-height:1.8;letter-spacing:.08em;color:var(--ink-quiet)}
+.sea{color:var(--sea)}
+.sea-deep{color:var(--sea-deep)}
+.gap{display:block;height:20px}
+
+/* text type: centered, no photo, max width 820 */
+.scene.text .text-block, .scene.text-quiet .text-block{
+  position:absolute;left:50%;top:0;bottom:0;width:max-content;max-width:1180px;transform:translateX(-50%);
+  display:flex;flex-direction:column;justify-content:center;gap:6px;
+}
+.scene.diagram{background:var(--paper)}
+.scene.diagram .diagram-img{position:absolute;inset:0;width:1920px;height:1080px;object-fit:contain;background:var(--paper)}
+.scene.photo-message .photo-full.right{background-position:right center}
+.price{font-family:var(--gothic);font-weight:500;font-size:64px;letter-spacing:.04em;color:var(--gold);line-height:1.3}
+.price .label{font-size:22px;margin-left:12px}
+.scene.text-quiet{ } /* max whitespace: same box but sparse content, larger side margins visually via content brevity */
+
+/* photo-message: full photo + left veil */
+.scene.photo-message{background:var(--paper)}
+.scene.photo-message .photo-full{position:absolute;inset:0;background-size:cover;background-position:center}
+.scene.photo-message .veil{position:absolute;inset:0;background:linear-gradient(90deg, rgba(250,247,240,.96) 0%, rgba(250,247,240,.90) 38%, rgba(250,247,240,0) 62%)}
+.scene.photo-message .text-block{position:absolute;left:140px;top:0;bottom:0;width:720px;display:flex;flex-direction:column;justify-content:center;gap:6px;z-index:2}
+
+/* cover-half: right half photo, left text (プロフィール／CTA) */
+.scene.cover-half{background:var(--paper)}
+.scene.cover-half .photo-half{position:absolute;right:0;top:0;width:960px;height:1080px;background-size:cover;background-position:center}
+.scene.cover-half .text-block.cover-text{position:absolute;left:140px;top:0;bottom:0;width:720px;display:flex;flex-direction:column;justify-content:center;gap:14px}
+.scene.cover-half .foot{position:absolute;left:140px;bottom:72px}
+
+/* compare (2-column, row28 in v1 - unused in v2 but kept for compat) */
+.scene.compare .text-block.compare-block{
+  position:absolute;left:140px;top:0;bottom:0;width:1640px;
+  display:flex;align-items:center;justify-content:center;gap:0;
+}
+.compare-col{width:680px;display:flex;flex-direction:column;gap:20px}
+
+/* cover (表紙): right half photo, left text incl. display size */
+.scene.cover{background:var(--paper)}
+.scene.cover .photo-half{position:absolute;right:0;top:0;width:960px;height:1080px;background-size:cover;background-position:center}
+.scene.cover .text-block.cover-text{position:absolute;left:140px;top:0;bottom:0;width:720px;display:flex;flex-direction:column;justify-content:center;gap:24px}
+.scene.cover .foot{position:absolute;left:140px;bottom:72px}
+.display{font-family:var(--mincho);font-weight:300;font-size:88px;line-height:1.25;letter-spacing:.08em}
+
+/* headline size overrides so a single kagikakko phrase never breaks mid-word */
+.headline.compact{font-size:54px}
+.headline.compact2{font-size:48px}
+
+/* story-loop diagrams (A: 悪循環の一周 / B: 新しいルートが分岐) */
+.loop-wrap{position:relative;width:100%;height:100%}
+.loop-dot{fill:var(--earth)}
+.loop-arc{stroke:var(--earth);stroke-width:1.5;fill:none;stroke-linecap:round}
+.loop-arrow{fill:var(--earth)}
+.loop-dot-faded{fill:var(--earth);opacity:.35}
+.loop-arc-faded{stroke:var(--earth);stroke-width:1.5;fill:none;stroke-linecap:round;opacity:.35}
+.loop-arrow-faded{fill:var(--earth);opacity:.35}
+.loop-branch{stroke:var(--sea);stroke-width:1.5;fill:none;stroke-linecap:round}
+.loop-branch-dot{fill:var(--sea)}
+.loop-branch-arrow{fill:var(--sea)}
+.loop-label{
+  position:absolute;width:300px;transform:translate(-50%,-50%);
+  font-family:var(--mincho);font-weight:300;font-size:26px;line-height:1.6;letter-spacing:.04em;
+  color:var(--ink);text-align:left;
+}
+.loop-label-narrow{width:270px;font-size:23px;line-height:1.5}
+.loop-label-faded{color:var(--ink-quiet);opacity:.55}
+.loop-label-sea{color:var(--sea)}
+.loop-branch-item{position:absolute;width:740px;display:flex;gap:18px;align-items:baseline}
+.loop-branch-num{font-family:var(--gothic);font-weight:500;font-size:22px;color:var(--sea);flex:0 0 auto;letter-spacing:.04em}
+.loop-branch-text{font-family:var(--mincho);font-weight:300;font-size:34px;line-height:1.7;letter-spacing:.04em;color:var(--sea)}
+
+.scene.compare-c .col{position:absolute;top:150px;width:760px;display:flex;flex-direction:column;align-items:flex-start}
+.scene.compare-c .col.left{left:170px}
+.scene.compare-c .col.right{left:1000px}
+.scene.compare-c .divider{position:absolute;left:960px;top:170px;width:1px;height:600px;background:var(--ink-quiet);opacity:.35}
+.scene.compare-c .item{font-family:var(--mincho);font-weight:300;font-size:36px;line-height:1.7;letter-spacing:.04em;color:var(--ink)}
+.scene.compare-c .sub{font-family:var(--mincho);font-weight:300;font-size:28px;line-height:1.6;letter-spacing:.06em;color:var(--ink-quiet)}
+.scene.compare-c .arrow{width:1px;height:44px;background:var(--earth);margin:12px 0 12px 24px;position:relative}
+.scene.compare-c .arrow::after{content:"";position:absolute;left:-6px;bottom:-2px;width:10px;height:10px;border-right:1.5px solid var(--earth);border-bottom:1.5px solid var(--earth);transform:rotate(45deg)}
+.scene.compare-c .hidden-box{border:1.5px dashed var(--ink-quiet);padding:14px 26px;color:var(--ink-quiet)}
+.scene.compare-c .colhead{margin-bottom:22px}
+.scene.compare-c .catch{position:absolute;left:0;right:0;bottom:96px;text-align:center !important;font-family:var(--mincho);font-weight:300;font-size:64px;letter-spacing:.06em;color:var(--ink)}
+</style>
+</head>
+<body class="slide-all">
+
+<script type="application/hyperframes-slideshow+json">
+{
+  "slides": [
+    {
+      "sceneId": "s01",
+      "notes": "（表紙。v2 #1 row2）"
+    },
+    {
+      "sceneId": "s01b",
+      "notes": "（挨拶・非表示スライドにまとめてある挨拶文の直後、講座タイトルとフックの間の名乗り1枚。v4 row13）"
+    },
+    {
+      "sceneId": "s02",
+      "notes": "最近、「ほんとはこうしたい。でも……」って、飲み込んだこと、ありませんか？休みたい、頼みたい、やってみたい。会場の方は、心当たりがあれば少しだけ手を挙げてみてください。録画で見ている方は、心の中で思い浮かべてください。その直後に出てきた「でも、ちゃんとしなきゃ」「迷惑をかける」「今じゃない」。その声が、今日の主人公です。"
+    },
+    {
+      "sceneId": "s03",
+      "notes": "今日、覚えて帰ってほしいのは三つだけです。一般的な解決策を増やしても、なぜ元に戻るのか。真の原因は何なのか。そして、本当の解決策は何なのか。この三つが分かると、「私の意志が弱いから変われない」という見方が変わります。"
+    },
+    {
+      "sceneId": "s04",
+      "notes": "このままでいいとは思わない。でも、どうしたいのかも分からない。自分のことを考えたいのに、仕事や家族のことで一日が終わる。時間ができたらと思っているうちに、今日も自分のことは後回し。これは、やりたいことがないからではありません。"
+    },
+    {
+      "sceneId": "s05",
+      "notes": "私が届けたい自由は、家族や仕事を捨てることでも、好き勝手に生きることでもありません。やりたいことを後回しにせず、「私は納得して選んでいる」という感覚を取り戻すこと。大切なものを大切にしながら、「私はほんとはどうしたい？」にも同じように席をつくることです。"
+    },
+    {
+      "sceneId": "s06",
+      "notes": "真面目さも、優しさも、頑張る力も捨てなくていい。変えたいのは、その力が自分を見張り、責めるためだけに使われていることです。今度は、自分を活かすためにも使えるようにしたい。これが私の活動の中心です。"
+    },
+    {
+      "sceneId": "s07",
+      "notes": "私は、人が本来持っている良さが出た瞬間を見るのが大好きです。高校で数学を15年教え、授業、担任、教育相談を通して人の変化に関わってきました。大学院では教育を学び直し、その後コーチとして5年、今度は大人が自分の人生を選び直す時間に寄り添ってきました。対話と、色やカードを使って、その人の中にある言葉を引き出しています。"
+    },
+    {
+      "sceneId": "s08",
+      "notes": "私たちは、たくさんの方法を知っています。本やYouTube、講座、診断、占いやカウンセリング、AIに相談する。ノートに書く。どれも役に立ちます。問題は方法ではありません。真面目な人ほど、それさえも「自分だけで解決するための課題」にしてしまうことです。できないと、方法ではなく自分を責める。だから知識が増えても、日常では同じ場所へ戻ります。"
+    },
+    {
+      "sceneId": "s09",
+      "notes": "私もそうでした。10年前、コーチングを学び始めました。でもそれは生徒のためで、知識のままでした。「ちゃんとしなきゃが強い」「ねばならないを捨てなきゃ」——頭では分かっていても、自分の反射は変わらなかった。知識が、自分の中でどんなルールとして起きているかまで、つながっていなかったんです。"
+    },
+    {
+      "sceneId": "s10",
+      "notes": "一番苦しかった頃は、子どもに「大好き」と言われても、嬉しいより先に「また何かをしてあげなければ」と感じました。愛は受け取るだけでいいのに、私は受け取ることにまで課題を足していたんです。頑張るほど、自分の中の採点は厳しくなっていました。"
+    },
+    {
+      "sceneId": "s11",
+      "notes": "その後、仕事と子育てを抱えたまま大学院に通いました。ちゃんと応えようと頑張って、主席になり、学長賞をいただいても、心の中は「まだまだ。もっと優秀な人がいる」。評価されたら安心できると思っていたのに、監視する声は静かになりませんでした。"
+    },
+    {
+      "sceneId": "s12",
+      "notes": "大学院で教育を学び直したとき、「その子の心の中に誰が住んでいるのか」という問いに出会いました。そこから、行動だけを見るのではなく、その行動を選ばせている内側の声を見るようになりました。自分にも、クライアントにも、同じ存在がいました。言葉にしようとすると構えてしまう人が、色やカードを前にすると、ふっと本音を話し始める。だから私は、色を入口にしています。"
+    },
+    {
+      "sceneId": "s13",
+      "notes": "真の原因は、時間のなさでも意志の弱さでもありません。内側の厳しい監視役が作ったルールを、本人が「正解」だと思って守り続けていることです。「自分は後」「理由がなければ優先してはいけない」「まず全部終わらせる」。正しいと思っているから、疑うことさえできません。"
+    },
+    {
+      "sceneId": "s14",
+      "notes": "監視役の原点には、子どもの頃の「ちゃんと分かりたい」「ちゃんと応えたい」「家族や先生にとって手がかからず、いい子でいたい」という純粋な力があります。それがいつの間にか「間違えちゃいけない」というルールに変わり、自分を見張る力になってしまった。あなたを守ろうとして育った力です。だから、仕方なかった。"
+    },
+    {
+      "sceneId": "s15",
+      "notes": "監視役がしていることを、一周で見てみます。まずルールを出す。「ほんとは違う」と思う間もなく、反射で選ぶ。相手も忙しい、悪気はなかった、私にも反省点がある——理由をつくって、納得したことにする。でも、違和感だけが残る。その違和感を「甘え」で片づけると、監視役はまた強くなる。これが一周です。監視役が見つからないのは、隠れているからではなく、毎回「納得したことにしている」からです。"
+    },
+    {
+      "sceneId": "s15b",
+      "notes": "「子どもが大きくなったら」「仕事が落ち着いたら」「今の案件が終わったら」。監視役を知らないままだと、そうやって自分の幸せを遠い未来へ置き続けます。でも、「ちゃんと終わってから」と考えている限り、その「終わり」は一生来ません。願いは消えるのではなく、感じにくくなっていく。10年後も同じことを言って、そのまま、お墓まで行ってしまう。そして、我慢する背中を、次の世代に渡してしまう。"
+    },
+    {
+      "sceneId": "s16",
+      "notes": "まず、監視役のルールは隠れているのではありません。「正解」だと思って守り続けたルールは、いつか「当たり前」になる。当たり前になったものは、もう疑えない。だから、自分とは違う視点を持つ誰かと一緒に見て、初めて「本当にそう？」と疑えます。"
+    },
+    {
+      "sceneId": "s17",
+      "notes": "次に、長く後回しにしてきた本音は、大声では出てきません。違和感やモヤモヤ、小さな「でも」として出てきます。苦しさは、もっとちゃんとしろという証拠ではなく、監視役の正解だけではもう苦しいというサインです。"
+    },
+    {
+      "sceneId": "s18",
+      "notes": "そして本音が聞こえても、「そんなの甘え」と退けてしまいます。でも「ほんとはこうしたい」は、甘えとは限りません。監視役の声に隠れて小さくなっていた、あなた自身の感覚です。"
+    },
+    {
+      "sceneId": "s19",
+      "notes": "監視役は悪者ではありません。「ちゃんと分かりたい」「ちゃんと応えたい」と一生懸命だった自分が育てた力でもあります。追い出す必要はありません。ただ、その声だけを正解にしない。自分の声にも、同じだけ席をつくります。"
+    },
+    {
+      "sceneId": "s20",
+      "notes": "そのための本当の解決策が、脱おりこうさんの三つのステップです。当たり前をほどく。ほんとはどうしたいを取り戻す。そして、自分の味方として選んでみる。短く言うと、ほどく、聴く、選ぶ。この三つです。"
+    },
+    {
+      "sceneId": "s21",
+      "notes": "ここで30秒だけ体験してみましょう。さっき思い浮かべたことを、「ほんとは、何々したい。でも、何々」と心の中で文章にしてください。書ける方は一言だけメモしてください。最初から全部分からなくて大丈夫です。その「でも」に、監視役のルールが表れます。"
+    },
+    {
+      "sceneId": "s22",
+      "notes": "一つ目は、ほどく。「でも」の後ろに出た言葉は、今ここにある事実でしょうか。それとも、ずっと守ってきたルールでしょうか。「本当にそう？」と、別の見方を一つ加えます。"
+    },
+    {
+      "sceneId": "s23",
+      "notes": "二つ目は、聴く。正しい理由を説明しなくていいとしたら、ほんとはどうしたいでしょう。立派な答えでなくていい。休みたい、頼りたい、やってみたい。その小さな声を、なかったことにしません。"
+    },
+    {
+      "sceneId": "s24",
+      "notes": "三つ目は、選ぶ。本音が聞こえても、選ばなければ監視役の勝ちです。小さく選んだ経験が「やってもいいんだ」を育て、味方の声が強くなっていきます。監視役が黙るまで待ちません。「そう思うよね。でも今回は、私はこっちを選んでみたい」と、自分にも味方します。毎回でなくていい。三回に一回、小さく違う選択を試します。"
+    },
+    {
+      "sceneId": "s25",
+      "notes": "監視役が黙るまで待ちません。「そう思うよね。でも今回は、私はこっちを選んでみたい」と、自分にも味方します。毎回でなくていい。三回に一回、小さく違う選択を試します。（図解B・row39内の図解部分。テキスト3行スライド s24 の直後）"
+    },
+    {
+      "sceneId": "s26",
+      "notes": "あるクライアントさんは、「母は子どもが泣くのが嫌だから預かりたくないんだ」と受け取っていました。「優しいから、泣いている子を見るのがつらいのかもしれない」という見方を一つ差し出したところ、ご本人の中でも思い当たることとつながり、お母さんに頼れるようになりました。（本人へ許可LINE送信済み・大丈夫の方向）たった一つの受け取り方が変わっただけです。でもこの方にとっては、人生で初めて「頼れる人」が一人増えた。地味に見えて、とんでもなく大きな変化です。"
+    },
+    {
+      "sceneId": "s27",
+      "notes": "今日の話は三つです。方法を増やしても、「一人で、ちゃんと」のままでは戻る。真の原因は、監視役のルールを正解だと思って守っていること。本当の解決策は、ほどく、聴く、選ぶ。ここだけ持ち帰ってください。"
+    },
+    {
+      "sceneId": "s28",
+      "notes": "私は今も、間違えるのが極端に怖いです。監視役は、まだ私の中にいます。でも、間違えないために努力してきた力で、ここまで来たのも本当です。だから、追い出さない。向きを変えるだけ。私自身も「脱おりこうさん」を完成した人ではなく、毎日の心の自由さへ向かう途中にいる。だからこそ、上から正解を教えるのではなく、同じように迷いながら生きる一人として、一緒に見つけていきたい。"
+    },
+    {
+      "sceneId": "s28b",
+      "notes": "（図解C「覚えることと、見抜くことは違う」。話す原稿は正本スプシE54：ふつうのAIと違うのは、話を覚えるだけでなく、私の見立てを持っていることです…）"
+    },
+    {
+      "sceneId": "s29",
+      "notes": "今日の話に一つでも心当たりがあった方へ。ソウルカラーをきっかけに、あなたを縛っているルールを一つ見つける90分の初回セッションを、割引でご案内します。色であなたの答えを決める時間ではありません。「ほんとはこうしたい。でも」の奥を一緒に見つけ、ほどく・聴く・選ぶの最初の一歩をつくる時間です。詳しい申込方法は、このあとの案内をご覧ください。今日の話に心当たりがあって、本気で変わりたいと思った方は、今日、申し込んでください。"
+    }
+  ],
+  "slideSequences": []
+}
+</script>
+
+<div id="root" data-composition-id="root" data-start="0" data-duration="256"
+     data-width="1920" data-height="1080"
+     style="position:relative;width:100%;height:100%;overflow:hidden;background:var(--paper);">
+
+<div id="scene-s01" class="scene clip cover" data-composition-id="s01" data-start="0" data-duration="8" data-label="表紙" data-width="1920" data-height="1080">
+  <div class="photo-half" style="background-image:url(images/S3_2.png)"></div>
+  <div class="text-block cover-text"><div class="display">脱おりこうさん</div><div class="hair"></div><div class="body">ちゃんとしながらでも、<br>もっと自由に生きていい。</div></div><div class="foot label">漢那初美</div>
+</div>
+
+<div id="scene-s01b" class="scene clip text-quiet" data-composition-id="s01b" data-start="8" data-duration="8" data-label="名乗り" data-width="1920" data-height="1080">
+  
+  <div class="text-block"><div class="headline">おりこうさん代表、<br>かんなはつみです。</div></div>
+</div>
+
+<div id="scene-s02" class="scene clip text" data-composition-id="s02" data-start="16" data-duration="8" data-label="フック" data-width="1920" data-height="1080">
+  
+  <div class="text-block"><div class="label">フック</div><div class="headline"><span class="sea">「ほんとはこうしたい。<br>でも……」</span><br><span class="gap"></span>最近ひとつ、<br>飲み込みませんでしたか？</div></div>
+</div>
+
+<div id="scene-s03" class="scene clip text" data-composition-id="s03" data-start="24" data-duration="8" data-label="今日の3つ" data-width="1920" data-height="1080">
+  
+  <div class="text-block"><div class="label">今日持ち帰ること</div><div class="headline">今日、<br>持ち帰るのは3つだけ</div><div class="hair"></div><div class="body">① 自分だけで解決しても、戻る<br>② 真の原因は、心の中の「監視役」<br>③ 本当の解決策は ほどく→聴く→選ぶ</div></div>
+</div>
+
+<div id="scene-s04" class="scene clip photo-message" data-composition-id="s04" data-start="32" data-duration="8" data-label="現状" data-width="1920" data-height="1080">
+  <div class="photo-full right" style="background-image:url(images/mj_kitchen.png)"></div><div class="veil"></div>
+  <div class="text-block"><div class="headline">やりたいことは<br>ある気がする。<br><span class="gap"></span>でも今日も、<br>自分は後回し。</div></div>
+</div>
+
+<div id="scene-s05" class="scene clip photo-message" data-composition-id="s05" data-start="40" data-duration="8" data-label="理想" data-width="1920" data-height="1080">
+  <div class="photo-full" style="background-image:url(images/S2.png)"></div><div class="veil"></div>
+  <div class="text-block"><div class="headline compact2">やりたいことを、<br>後回しにしない。<br><span class="gap"></span><span class="sea">「私は納得して選んでる」と<br>言える毎日。</span></div></div>
+</div>
+
+<div id="scene-s06" class="scene clip text" data-composition-id="s06" data-start="48" data-duration="8" data-label="向きを変える" data-width="1920" data-height="1080">
+  
+  <div class="text-block"><div class="headline">頑張るのを、<br>やめなくていい。<br><span class="gap"></span>向きを変えるだけ。</div></div>
+</div>
+
+<div id="scene-s07" class="scene clip cover-half" data-composition-id="s07" data-start="56" data-duration="8" data-label="プロフィール" data-width="1920" data-height="1080">
+  <div class="photo-half" style="background-image:url(images/S55_hatsumi.jpg)"></div>
+  <div class="text-block cover-text"><div class="label">プロフィール</div><div class="headline">人が輝く瞬間が、<br>大好きです。</div><div class="hair"></div><div class="note">高校数学教員 約20年　→　大学院　→　コーチ5年</div><span class="gap"></span><div class="body">色で、言葉にする。</div><div class="note">ソウルカラー＝誕生日の色。<br>答えでなく、羅針盤。</div></div><div class="foot label">漢那初美</div>
+</div>
+
+<div id="scene-s08" class="scene clip text" data-composition-id="s08" data-start="64" data-duration="8" data-label="一般的な解決策" data-width="1920" data-height="1080">
+  
+  <div class="text-block"><div class="headline">本・YouTube・<br>講座・診断・占い・AI……</div><div class="hair"></div><div class="body">どれも、自分だけで解決しようとする方法。</div></div>
+</div>
+
+<div id="scene-s09" class="scene clip text" data-composition-id="s09" data-start="72" data-duration="8" data-label="Story①" data-width="1920" data-height="1080">
+  
+  <div class="text-block"><div class="label">Story</div><div class="headline">コーチングを学んだ。<br><span class="gap"></span>でも、自分の反射は<br>変わらなかった。</div></div>
+</div>
+
+<div id="scene-s10" class="scene clip text" data-composition-id="s10" data-start="80" data-duration="8" data-label="Story②" data-width="1920" data-height="1080">
+  
+  <div class="text-block"><div class="label">Story</div><div class="headline">子どもの<br>「大好き」さえ、<br>受け取れなかった。</div></div>
+</div>
+
+<div id="scene-s11" class="scene clip text" data-composition-id="s11" data-start="88" data-duration="8" data-label="Story③" data-width="1920" data-height="1080">
+  
+  <div class="text-block"><div class="label">Story</div><div class="headline">主席で学長賞。<br>それでも<br>「まだまだ」。</div></div>
+</div>
+
+<div id="scene-s12" class="scene clip photo-message" data-composition-id="s12" data-start="96" data-duration="8" data-label="開発秘話" data-width="1920" data-height="1080">
+  <div class="photo-full right" style="background-image:url(images/mj_heart_house.png)"></div><div class="veil"></div>
+  <div class="text-block"><div class="headline"><span class="sea-deep">「あなたの心の中に、<br>誰が住んでいる？」</span></div></div>
+</div>
+
+<div id="scene-s13" class="scene clip text" data-composition-id="s13" data-start="104" data-duration="8" data-label="真の原因" data-width="1920" data-height="1080">
+  
+  <div class="text-block"><div class="label">真の原因</div><div class="headline">真の原因は、<br>あなたの心の中に<br>育ってしまった、<br>厳しい監視役。</div></div>
+</div>
+
+<div id="scene-s14" class="scene clip cover-half" data-composition-id="s14" data-start="112" data-duration="8" data-label="監視役はどう育った" data-width="1920" data-height="1080">
+  <div class="photo-half" style="background-image:url(images/mj_shoes.png);background-position:70% center"></div>
+  <div class="text-block cover-text"><div class="headline">監視役は、<br>どう育った？</div><div class="hair"></div><div class="body">「ちゃんと応えたい」——<br>純粋な願いから始まった。<span class="gap"></span>応えられたら、安心できた。<br>応えられないと、怖かった。<span class="gap"></span>その怖さを避けるために、<br>自分で自分を見張り始めた。<span class="gap"></span>大人になっても、その声だけが残った。<br>「間違えちゃいけない」</div></div>
+</div>
+
+<div id="scene-s15" class="scene clip diagram" data-composition-id="s15" data-start="120" data-duration="8" data-label="図解A 監視役がしていること" data-width="1920" data-height="1080">
+  <img class="diagram-img" src="images/diagram_A.png" alt="監視役がしていること">
+</div>
+
+<div id="scene-s15b" class="scene clip photo-message" data-composition-id="s15b" data-start="128" data-duration="8" data-label="痛み（放置したとき）" data-width="1920" data-height="1080">
+  <div class="photo-full right" style="background-image:url(images/tokei.png)"></div><div class="veil"></div>
+  <div class="text-block"><div class="body">「全部終わってから」——<br>その「終わり」は、<br>いつ来ますか？<span class="gap"></span>10年後も、<br>同じことを言っていませんか？</div></div>
+</div>
+
+<div id="scene-s16" class="scene clip text" data-composition-id="s16" data-start="136" data-duration="8" data-label="ポイント1" data-width="1920" data-height="1080">
+  
+  <div class="text-block"><div class="label">重要ポイント 1</div><div class="headline">① 正しそうだから、<br>疑わない。<br>疑わないうちに、<br>当たり前になる。</div></div>
+</div>
+
+<div id="scene-s17" class="scene clip text" data-composition-id="s17" data-start="144" data-duration="8" data-label="ポイント2" data-width="1920" data-height="1080">
+  
+  <div class="text-block"><div class="label">重要ポイント 2</div><div class="headline">②「ほんとは」が<br>小さくて、<br>聞こえない。</div></div>
+</div>
+
+<div id="scene-s18" class="scene clip text" data-composition-id="s18" data-start="152" data-duration="8" data-label="ポイント3" data-width="1920" data-height="1080">
+  
+  <div class="text-block"><div class="label">重要ポイント 3</div><div class="headline">③「ほんとは」が、<br>「甘え」に聞こえる。</div></div>
+</div>
+
+<div id="scene-s19" class="scene clip cover-half" data-composition-id="s19" data-start="160" data-duration="8" data-label="Evidence" data-width="1920" data-height="1080">
+  <div class="photo-half" style="background-image:url(images/mj_chairs.png);background-position:54% center"></div>
+  <div class="text-block cover-text"><div class="label">Evidence</div><div class="headline">必要なのは、<br>監視役を<br>消すことではない。<br><span class="gap"></span>自分の声にも、<br>同じだけ<br>席をつくること。</div></div>
+</div>
+
+<div id="scene-s20" class="scene clip text" data-composition-id="s20" data-start="168" data-duration="8" data-label="3ステップ" data-width="1920" data-height="1080">
+  
+  <div class="text-block"><div class="label">Original Skill</div><div class="headline">脱おりこうさんの<br>3ステップ</div><div class="hair"></div><div class="body">① ほどく ── ルールから解放される<br>② 聴く ── ほんとの願いを見つける<br>③ 選ぶ ── 自分の味方になる</div></div>
+</div>
+
+<div id="scene-s21" class="scene clip text-quiet" data-composition-id="s21" data-start="176" data-duration="8" data-label="体感" data-width="1920" data-height="1080">
+  
+  <div class="text-block"><div class="headline">30秒だけ、<br>自分の中を見てみる<br><span class="gap"></span><span class="sea">「ほんとは＿＿したい。<br>でも＿＿」</span></div></div>
+</div>
+
+<div id="scene-s22" class="scene clip text" data-composition-id="s22" data-start="184" data-duration="8" data-label="STEP1" data-width="1920" data-height="1080">
+  
+  <div class="text-block"><div class="label">STEP 1</div><div class="headline">①「当たり前」を<br>ほどく</div><div class="hair"></div><div class="body">その「でも」は、<br>あなたのどんなルールを<br>守ろうとして<br>出てきましたか？</div></div>
+</div>
+
+<div id="scene-s23" class="scene clip text" data-composition-id="s23" data-start="192" data-duration="8" data-label="STEP2" data-width="1920" data-height="1080">
+  
+  <div class="text-block"><div class="label">STEP 2</div><div class="headline compact">②「ほんとはどうしたい？」<br>を取り戻す</div><div class="hair"></div><div class="body">誰にも遠慮しなくて<br>いいなら、<br><span class="sea">ほんとはどうしたい？</span></div><span class="gap"></span><div class="note">どうしたいか分からないときは、<br>色が羅針盤になる。</div></div>
+</div>
+
+<div id="scene-s24" class="scene clip text" data-composition-id="s24" data-start="200" data-duration="8" data-label="STEP3" data-width="1920" data-height="1080">
+  
+  <div class="text-block"><div class="label">STEP 3</div><div class="headline">③ 自分の味方として<br>選んでみる</div><div class="hair"></div><div class="body">監視役の声があっても、<br>3回に1回、小さく選ぶ。</div></div>
+</div>
+
+<div id="scene-s25" class="scene clip story-loop-b diagram" data-composition-id="s25" data-start="208" data-duration="8" data-label="図解B 新しいルート" data-width="1920" data-height="1080">
+  
+  <div class="loop-wrap">
+    <div class="label" style="position:absolute;left:140px;top:72px;width:760px">同じループに、新しいルートが生える</div>
+    <svg viewBox="0 0 1920 1080" width="1920" height="1080" style="position:absolute;inset:0">
+      <path d="M 480.0 330.0 A 210 210 0 0 1 679.7 475.1" class="loop-arc-faded"/>
+<path d="M 679.7 475.1 A 210 210 0 0 1 603.4 709.9" class="loop-arc-faded"/>
+<path d="M 603.4 709.9 A 210 210 0 0 1 356.6 709.9" class="loop-arc-faded"/>
+<path d="M 356.6 709.9 A 210 210 0 0 1 280.3 475.1" class="loop-arc-faded"/>
+<path d="M 280.3 475.1 A 210 210 0 0 1 480.0 330.0" class="loop-arc-faded"/>
+      <circle cx="480.0" cy="330.0" r="6" class="loop-dot-faded"/>
+<circle cx="679.7" cy="475.1" r="6" class="loop-dot-faded"/>
+<circle cx="603.4" cy="709.9" r="6" class="loop-dot-faded"/>
+<circle cx="356.6" cy="709.9" r="6" class="loop-dot-faded"/>
+<circle cx="280.3" cy="475.1" r="6" class="loop-dot-faded"/>
+      <path d="M -9 -6 L 9 0 L -9 6 Z" class="loop-arrow-faded" transform="translate(603.4,370.1) rotate(36.0)"/>
+<path d="M -9 -6 L 9 0 L -9 6 Z" class="loop-arrow-faded" transform="translate(679.7,604.9) rotate(108.0)"/>
+<path d="M -9 -6 L 9 0 L -9 6 Z" class="loop-arrow-faded" transform="translate(480.0,750.0) rotate(180.0)"/>
+<path d="M -9 -6 L 9 0 L -9 6 Z" class="loop-arrow-faded" transform="translate(280.3,604.9) rotate(252.0)"/>
+<path d="M -9 -6 L 9 0 L -9 6 Z" class="loop-arrow-faded" transform="translate(356.6,370.1) rotate(324.0)"/>
+      <path id="loop-branch-path-s25" d="M 523.7 334.6 Q 746.3 453.5 636.1 680.5" class="loop-branch"/>
+      <path d="M -9 -6 L 9 0 L -9 6 Z" class="loop-branch-arrow" transform="translate(636.1,680.5) rotate(115.9)"/>
+    </svg>
+    <div class="loop-label loop-label-faded loop-label-narrow" style="left:480px;top:230px" data-idx="0"></div><div class="loop-label loop-label-faded loop-label-narrow" style="left:775px;top:444px" data-idx="1"></div><div class="loop-label loop-label-faded loop-label-narrow" style="left:662px;top:791px" data-idx="2"></div><div class="loop-label loop-label-faded loop-label-narrow" style="left:298px;top:791px" data-idx="3"></div><div class="loop-label loop-label-faded loop-label-narrow" style="left:185px;top:444px" data-idx="4"></div>
+    <div class="hair vertical" style="position:absolute;left:930px;top:260px"></div>
+    <div class="loop-branch-item" style="left:970px;top:260px;width:810px" data-idx="0"><span class="loop-branch-num">2’</span><span class="loop-branch-text" data-idx="0"></span></div><div class="loop-branch-item" style="left:970px;top:440px;width:810px" data-idx="1"><span class="loop-branch-num">3’</span><span class="loop-branch-text" data-idx="1"></span></div><div class="loop-branch-item" style="left:970px;top:620px;width:810px" data-idx="2"><span class="loop-branch-num">4’</span><span class="loop-branch-text" data-idx="2"></span></div><div class="loop-branch-item" style="left:970px;top:800px;width:810px" data-idx="3"><span class="loop-branch-num">5’</span><span class="loop-branch-text" data-idx="3"></span></div>
+    <script>
+    // ↓ この2箇所（LOOP_BASE_s25 / LOOP_BRANCH_s25）だけを編集すれば文言を差し替えられる
+    (function(){
+      var LOOP_BASE_s25 = ["ルールを出す", "「ほんとは違う」と<br>思う間もなく、<br>反射で選ぶ", "理由をつくって<br>「納得したことにする」", "違和感だけが残る", "「甘え」で片づけ、<br>監視役がまた強くなる"];
+      var LOOP_BRANCH_s25 = ["一呼吸おいて<br>「ほんとはどうしたい？」と聞く", "「そう思うよね。<br>でも私はこっちを選んでみたい」", "小さく選ぶ", "「やってもいいんだ」が育つ"];
+      var root = document.getElementById("scene-s25");
+      root.querySelectorAll(".loop-label").forEach(function(el){
+        el.innerHTML = LOOP_BASE_s25[Number(el.dataset.idx)];
+      });
+      root.querySelectorAll(".loop-branch-text").forEach(function(el){
+        el.innerHTML = LOOP_BRANCH_s25[Number(el.dataset.idx)];
+      });
+      var p = document.getElementById("loop-branch-path-s25");
+      if (p) {
+        var len = p.getTotalLength();
+        p.style.strokeDasharray = len;
+        p.style.strokeDashoffset = len;
+        window["__loopBranchLen_s25"] = len;
+      }
+    })();
+    </script>
+  </div>
+  <img class="diagram-img" src="images/diagram_B.png" alt="同じループに、新しいルートが生える" onerror="this.remove()">
+</div>
+
+<div id="scene-s26" class="scene clip photo-message" data-composition-id="s26" data-start="216" data-duration="8" data-label="声" data-width="1920" data-height="1080">
+  <div class="photo-full" style="background-image:url(images/BG_sea.png)"></div><div class="veil"></div>
+  <div class="text-block"><div class="headline compact2"><span class="sea-deep">「お母さんは、<br>泣く子が嫌なんだ」</span></div><div class="hair"></div><div class="note">——その受け取り方が変わって、<br>母に頼れるようになった。</div></div>
+</div>
+
+<div id="scene-s27" class="scene clip text" data-composition-id="s27" data-start="224" data-duration="8" data-label="まとめ" data-width="1920" data-height="1080">
+  
+  <div class="text-block"><div class="label">まとめ</div><div class="headline">今日の3つ</div><div class="hair"></div><div class="body">① 自分だけで解決しても、戻る<br>② 真の原因は、心の中の「監視役」<br>③ 本当の解決策は ほどく→聴く→選ぶ</div></div>
+</div>
+
+<div id="scene-s28" class="scene clip photo-message" data-composition-id="s28" data-start="232" data-duration="8" data-label="私も途中" data-width="1920" data-height="1080">
+  <div class="photo-full" style="background-image:url(images/beach_walk.png)"></div><div class="veil"></div>
+  <div class="text-block"><div class="headline">私も、<br>まだ途中です。</div><div class="hair"></div><div class="body">だから、<br>最後まで隣にいます。</div></div>
+</div>
+
+<div id="scene-s28b" class="scene clip compare-c" data-composition-id="s28b" data-start="240" data-duration="8" data-label="サポート１" data-width="1920" data-height="1080">
+  <div class="col left">
+    <div class="label colhead">ふつうのAI</div>
+    <div class="item">あなた<br>「どうしたら、もっとちゃんとできる？」</div><div class="sub">監視役の前提のまま、質問している</div>
+    <div class="arrow"></div>
+    <div class="item">AI「こうすれば、もっと頑張れます」</div><div class="sub">前提の中で答える</div>
+    <div class="arrow"></div>
+    <div class="item hidden-box">監視役のルールは、<br>聞かれないまま残る</div>
+  </div>
+  <div class="divider"></div>
+  <div class="col right">
+    <div class="label colhead">ラテ（分身AI）</div>
+    <div class="item">セッションで見つけたルール</div><div class="sub">ここから始まる</div>
+    <div class="arrow"></div>
+    <div class="item">ラテ<span class="sea">「本当にそう？」</span></div><div class="sub">前提を問い返す</div>
+    <div class="arrow"></div>
+    <div class="item">前提が、見えるようになる</div>
+  </div>
+  <div class="catch">覚えることと、見抜くことは違う。</div>
+</div>
+
+<div id="scene-s29" class="scene clip cover-half gold-accent" data-composition-id="s29" data-start="248" data-duration="8" data-label="ご案内" data-width="1920" data-height="1080">
+  <div class="photo-half" style="background-image:url(images/S3_1.png)"></div>
+  <div class="text-block cover-text"><div class="headline small">今日の話に、一つでも<br>心当たりがあった方へ</div><div class="hair"></div><div class="body">ソウルカラーをきっかけに、<br>あなたを縛っている<br>ルールを一つ見つける90分</div><span class="gap"></span><div class="label">初回セッション　通常15,000円 →</div><div class="price">9,800円<span class="label">（税込）</span></div><div class="note">＋ 分身AI「ラテ」と1ヶ月、話せます</div></div>
+</div>
+
+</div>
+
+<script>
+
+(function(){
+  var COUNT = 32;
+  var EACH = 8;
+  var TOTAL = COUNT * EACH;
+  var tl = gsap.timeline({ paused: true });
+  tl.to({}, { duration: TOTAL });
+  window.__timelines = window.__timelines || {};
+  window.__timelines["root"] = tl;
+
+  var scenes = [];
+  var ids = ["s01", "s01b", "s02", "s03", "s04", "s05", "s06", "s07", "s08", "s09", "s10", "s11", "s12", "s13", "s14", "s15", "s15b", "s16", "s17", "s18", "s19", "s20", "s21", "s22", "s23", "s24", "s25", "s26", "s27", "s28", "s28b", "s29"];
+  for (var i = 0; i < ids.length; i++) {
+    scenes.push({ id: ids[i], el: "scene-" + ids[i], start: i * EACH, duration: EACH });
+  }
+  function update(t){
+    for (var i = 0; i < scenes.length; i++) {
+      var sc = scenes[i], el = document.getElementById(sc.el);
+      if (!el) continue;
+      var active = t >= sc.start && t < sc.start + sc.duration;
+      if (i === scenes.length - 1 && t >= sc.start) active = true;
+      el.style.opacity = active ? "1" : "0";
+      el.style.visibility = active ? "visible" : "hidden";
+      el.style.pointerEvents = active ? "auto" : "none";
+    }
+    var loopBIds = ["s25"];
+    for (var j = 0; j < loopBIds.length; j++) {
+      var bid = loopBIds[j];
+      var sc2 = null;
+      for (var k = 0; k < scenes.length; k++) { if (scenes[k].id === bid) sc2 = scenes[k]; }
+      if (!sc2) continue;
+      var p = document.getElementById("loop-branch-path-" + bid);
+      var len = window["__loopBranchLen_" + bid];
+      if (!p || !len) continue;
+      var local = t - sc2.start;
+      var progress = Math.max(0, Math.min(1, local / 3));
+      p.style.strokeDashoffset = String(len * (1 - progress));
+    }
+  }
+  for (var q = 0; q < scenes.length; q++) {
+    var sq = scenes[q], elq = document.getElementById(sq.el);
+    if (!elq) continue;
+    tl.set(elq, { opacity: 1, visibility: "visible", pointerEvents: "auto" }, sq.start);
+    if (q < scenes.length - 1) tl.set(elq, { opacity: 0, visibility: "hidden", pointerEvents: "none" }, sq.start + sq.duration);
+  }
+  window.__hfSetTime = update;
+  update(0);
+  tl.eventCallback("onUpdate", function(){ update(tl.time()); });
+
+  function postTimeline(){
+    try {
+      parent.postMessage({ source:"hf-preview", type:"timeline", durationInFrames: TOTAL*30,
+        scenes: scenes.map(function(s){ return { id:s.id, start:s.start, duration:s.duration }; }) }, "*");
+    } catch(e) {}
+  }
+  if (document.readyState === "complete") setTimeout(postTimeline, 300);
+  else window.addEventListener("load", function(){ setTimeout(postTimeline, 300); });
+})();
+
+</script>
+</body>
+</html>
