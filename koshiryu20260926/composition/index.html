@@ -105,6 +105,27 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--paper);fon
 .scene.compare-c .hidden-box{border:1.5px dashed var(--ink-quiet);padding:14px 26px;color:var(--ink-quiet)}
 .scene.compare-c .colhead{margin-bottom:22px}
 .scene.compare-c .catch{position:absolute;left:0;right:0;bottom:96px;text-align:center !important;font-family:var(--mincho);font-weight:300;font-size:64px;letter-spacing:.06em;color:var(--ink)}
+.reveal{opacity:0;transform:translateY(20px)}
+.scene.is-on .reveal{opacity:1;transform:none;transition:opacity .9s ease-out 1.5s, transform .9s cubic-bezier(.25,.46,.45,.94) 1.5s}
+/* 動き（DESIGN.md 6章）：文字はフェード＋y20、0.18sずつずらす／写真は8秒で1.03までゆっくり寄る */
+.scene .text-block > *, .scene.compare-c .col > *, .scene.compare-c .catch, .scene .foot{opacity:0;transform:translateY(20px)}
+.scene.is-on .text-block > *, .scene.is-on.compare-c .col > *, .scene.is-on.compare-c .catch, .scene.is-on .foot{opacity:1;transform:none;transition:opacity .8s ease-out, transform .8s cubic-bezier(.25,.46,.45,.94)}
+.scene.is-on .text-block > .hair{opacity:.5}
+.scene.is-on .text-block > *:nth-child(2), .scene.is-on.compare-c .col > *:nth-child(2){transition-delay:.18s}
+.scene.is-on .text-block > *:nth-child(3), .scene.is-on.compare-c .col > *:nth-child(3){transition-delay:.36s}
+.scene.is-on .text-block > *:nth-child(4), .scene.is-on.compare-c .col > *:nth-child(4){transition-delay:.54s}
+.scene.is-on .text-block > *:nth-child(5), .scene.is-on.compare-c .col > *:nth-child(5){transition-delay:.72s}
+.scene.is-on .text-block > *:nth-child(n+6), .scene.is-on.compare-c .col > *:nth-child(n+6){transition-delay:.9s}
+.scene.is-on.compare-c .col.right > *{transition-delay:1.1s}
+.scene.is-on.compare-c .catch{transition-delay:1.6s}
+.scene.is-on .foot{transition-delay:.6s}
+.scene .photo-full, .scene .photo-half{transform:scale(1)}
+.scene.is-on .photo-full, .scene.is-on .photo-half{transform:scale(1.03);transition:transform 8s linear}
+.scene .diagram-img{opacity:0}
+.scene.is-on .diagram-img{opacity:1;transition:opacity .9s ease-out}
+.scene.is-on .text-block > .reveal{transition:opacity .9s ease-out 1.5s, transform .9s cubic-bezier(.25,.46,.45,.94) 1.5s}
+body.static .text-block > *, body.static .compare-c .col > *, body.static .compare-c .catch, body.static .foot, body.static .diagram-img, body.static .reveal, body.static .photo-full, body.static .photo-half{opacity:1 !important;transform:none !important;transition:none !important}
+body.static .hair{opacity:.5 !important}
 </style>
 </head>
 <body class="slide-all">
@@ -158,7 +179,7 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--paper);fon
     },
     {
       "sceneId": "s11",
-      "notes": "その後、仕事と子育てを抱えたまま大学院に通いました。ちゃんと応えようと頑張って、主席になり、学長賞をいただいても、心の中は「まだまだ。もっと優秀な人がいる」。評価されたら安心できると思っていたのに、監視する声は静かになりませんでした。"
+      "notes": "その後、仕事と子育てを抱えたまま大学院に通いました。ちゃんと応えようと頑張って、首席になり、学長賞をいただいても、心の中は「まだまだ。もっと優秀な人がいる」。評価されたら安心できると思っていたのに、監視する声は静かになりませんでした。"
     },
     {
       "sceneId": "s12",
@@ -167,6 +188,10 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--paper);fon
     {
       "sceneId": "s13",
       "notes": "真の原因は、時間のなさでも意志の弱さでもありません。内側の厳しい監視役が作ったルールを、本人が「正解」だと思って守り続けていることです。「自分は後」「理由がなければ優先してはいけない」「まず全部終わらせる」。正しいと思っているから、疑うことさえできません。"
+    },
+    {
+      "sceneId": "s13b",
+      "notes": "（3秒、黙る）"
     },
     {
       "sceneId": "s14",
@@ -214,7 +239,7 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--paper);fon
     },
     {
       "sceneId": "s24",
-      "notes": "三つ目は、選ぶ。本音が聞こえても、選ばなければ監視役の勝ちです。小さく選んだ経験が「やってもいいんだ」を育て、味方の声が強くなっていきます。監視役が黙るまで待ちません。「そう思うよね。でも今回は、私はこっちを選んでみたい」と、自分にも味方します。毎回でなくていい。三回に一回、小さく違う選択を試します。"
+      "notes": "三つ目は、選ぶ。心の中に住んでいるのは、監視役だけではありません。もう一人、何があっても自分の味方をしてくれる親友を、住まわせます。『そう思うよね。でも今回は、私はこっちを選んでみたい』——これが、その親友の声です。本音が聞こえても、選ばなければ監視役の勝ちです。小さく選んだ経験が「やってもいいんだ」を育て、味方の声が強くなっていきます。監視役が黙るまで待ちません。「そう思うよね。でも今回は、私はこっちを選んでみたい」と、自分にも味方します。毎回でなくていい。三回に一回、小さく違う選択を試します。"
     },
     {
       "sceneId": "s25",
@@ -233,8 +258,12 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--paper);fon
       "notes": "私は今も、間違えるのが極端に怖いです。監視役は、まだ私の中にいます。でも、間違えないために努力してきた力で、ここまで来たのも本当です。だから、追い出さない。向きを変えるだけ。私自身も「脱おりこうさん」を完成した人ではなく、毎日の心の自由さへ向かう途中にいる。だからこそ、上から正解を教えるのではなく、同じように迷いながら生きる一人として、一緒に見つけていきたい。"
     },
     {
+      "sceneId": "s28c",
+      "notes": "（ラテ紹介。話す原稿は正本スプシE54の前半：「最後まで伴走する、とお伝えしました」〜「気をつかわずに話せる相手です」）"
+    },
+    {
       "sceneId": "s28b",
-      "notes": "（図解C「覚えることと、見抜くことは違う」。話す原稿は正本スプシE54：ふつうのAIと違うのは、話を覚えるだけでなく、私の見立てを持っていることです…）"
+      "notes": "（図解C「覚えることと、見抜くことは違う」。話す原稿は正本スプシE54の後半：ふつうのAIと違うのは、話を覚えるだけでなく、私の見立てを持っていることです…）"
     },
     {
       "sceneId": "s29",
@@ -245,7 +274,7 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--paper);fon
 }
 </script>
 
-<div id="root" data-composition-id="root" data-start="0" data-duration="256"
+<div id="root" data-composition-id="root" data-start="0" data-duration="272"
      data-width="1920" data-height="1080"
      style="position:relative;width:100%;height:100%;overflow:hidden;background:var(--paper);">
 
@@ -296,7 +325,7 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--paper);fon
 
 <div id="scene-s09" class="scene clip text" data-composition-id="s09" data-start="72" data-duration="8" data-label="Story①" data-width="1920" data-height="1080">
   
-  <div class="text-block"><div class="label">Story</div><div class="headline">コーチングを学んだ。<br><span class="gap"></span>でも、自分の反射は<br>変わらなかった。</div></div>
+  <div class="text-block"><div class="label">Story</div><div class="headline">コーチングを学んだ。<br><span class="gap"></span>でも、分かっていても、<br>同じことをしてしまった。</div></div>
 </div>
 
 <div id="scene-s10" class="scene clip text" data-composition-id="s10" data-start="80" data-duration="8" data-label="Story②" data-width="1920" data-height="1080">
@@ -306,7 +335,7 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--paper);fon
 
 <div id="scene-s11" class="scene clip text" data-composition-id="s11" data-start="88" data-duration="8" data-label="Story③" data-width="1920" data-height="1080">
   
-  <div class="text-block"><div class="label">Story</div><div class="headline">主席で学長賞。<br>それでも<br>「まだまだ」。</div></div>
+  <div class="text-block"><div class="label">Story</div><div class="headline">首席で学長賞。<br>それでも<br>「まだまだ」。</div></div>
 </div>
 
 <div id="scene-s12" class="scene clip photo-message" data-composition-id="s12" data-start="96" data-duration="8" data-label="開発秘話" data-width="1920" data-height="1080">
@@ -319,66 +348,70 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--paper);fon
   <div class="text-block"><div class="label">真の原因</div><div class="headline">真の原因は、<br>あなたの心の中に<br>育ってしまった、<br>厳しい監視役。</div></div>
 </div>
 
-<div id="scene-s14" class="scene clip cover-half" data-composition-id="s14" data-start="112" data-duration="8" data-label="監視役はどう育った" data-width="1920" data-height="1080">
+<div id="scene-s13b" class="scene clip photo-message" data-composition-id="s13b" data-start="112" data-duration="8" data-label="間（3秒黙る）" data-width="1920" data-height="1080">
+  <div class="photo-full" style="background-image:url(images/mj_door_closed.png)"></div>
+</div>
+
+<div id="scene-s14" class="scene clip cover-half" data-composition-id="s14" data-start="120" data-duration="8" data-label="監視役はどう育った" data-width="1920" data-height="1080">
   <div class="photo-half" style="background-image:url(images/mj_shoes.png);background-position:70% center"></div>
   <div class="text-block cover-text"><div class="headline">監視役は、<br>どう育った？</div><div class="hair"></div><div class="body">「ちゃんと応えたい」——<br>純粋な願いから始まった。<span class="gap"></span>応えられたら、安心できた。<br>応えられないと、怖かった。<span class="gap"></span>その怖さを避けるために、<br>自分で自分を見張り始めた。<span class="gap"></span>大人になっても、その声だけが残った。<br>「間違えちゃいけない」</div></div>
 </div>
 
-<div id="scene-s15" class="scene clip diagram" data-composition-id="s15" data-start="120" data-duration="8" data-label="図解A 監視役がしていること" data-width="1920" data-height="1080">
+<div id="scene-s15" class="scene clip diagram" data-composition-id="s15" data-start="128" data-duration="8" data-label="図解A 監視役がしていること" data-width="1920" data-height="1080">
   <img class="diagram-img" src="images/diagram_A.png" alt="監視役がしていること">
 </div>
 
-<div id="scene-s15b" class="scene clip photo-message" data-composition-id="s15b" data-start="128" data-duration="8" data-label="痛み（放置したとき）" data-width="1920" data-height="1080">
+<div id="scene-s15b" class="scene clip photo-message" data-composition-id="s15b" data-start="136" data-duration="8" data-label="痛み（放置したとき）" data-width="1920" data-height="1080">
   <div class="photo-full right" style="background-image:url(images/tokei.png)"></div><div class="veil"></div>
   <div class="text-block"><div class="body">「全部終わってから」——<br>その「終わり」は、<br>いつ来ますか？<span class="gap"></span>10年後も、<br>同じことを言っていませんか？</div></div>
 </div>
 
-<div id="scene-s16" class="scene clip text" data-composition-id="s16" data-start="136" data-duration="8" data-label="ポイント1" data-width="1920" data-height="1080">
+<div id="scene-s16" class="scene clip text" data-composition-id="s16" data-start="144" data-duration="8" data-label="ポイント1" data-width="1920" data-height="1080">
   
   <div class="text-block"><div class="label">重要ポイント 1</div><div class="headline">① 正しそうだから、<br>疑わない。<br>疑わないうちに、<br>当たり前になる。</div></div>
 </div>
 
-<div id="scene-s17" class="scene clip text" data-composition-id="s17" data-start="144" data-duration="8" data-label="ポイント2" data-width="1920" data-height="1080">
+<div id="scene-s17" class="scene clip text" data-composition-id="s17" data-start="152" data-duration="8" data-label="ポイント2" data-width="1920" data-height="1080">
   
   <div class="text-block"><div class="label">重要ポイント 2</div><div class="headline">②「ほんとは」が<br>小さくて、<br>聞こえない。</div></div>
 </div>
 
-<div id="scene-s18" class="scene clip text" data-composition-id="s18" data-start="152" data-duration="8" data-label="ポイント3" data-width="1920" data-height="1080">
+<div id="scene-s18" class="scene clip text" data-composition-id="s18" data-start="160" data-duration="8" data-label="ポイント3" data-width="1920" data-height="1080">
   
   <div class="text-block"><div class="label">重要ポイント 3</div><div class="headline">③「ほんとは」が、<br>「甘え」に聞こえる。</div></div>
 </div>
 
-<div id="scene-s19" class="scene clip cover-half" data-composition-id="s19" data-start="160" data-duration="8" data-label="Evidence" data-width="1920" data-height="1080">
+<div id="scene-s19" class="scene clip cover-half" data-composition-id="s19" data-start="168" data-duration="8" data-label="Evidence" data-width="1920" data-height="1080">
   <div class="photo-half" style="background-image:url(images/mj_chairs.png);background-position:54% center"></div>
   <div class="text-block cover-text"><div class="label">Evidence</div><div class="headline">必要なのは、<br>監視役を<br>消すことではない。<br><span class="gap"></span>自分の声にも、<br>同じだけ<br>席をつくること。</div></div>
 </div>
 
-<div id="scene-s20" class="scene clip text" data-composition-id="s20" data-start="168" data-duration="8" data-label="3ステップ" data-width="1920" data-height="1080">
+<div id="scene-s20" class="scene clip text" data-composition-id="s20" data-start="176" data-duration="8" data-label="3ステップ" data-width="1920" data-height="1080">
   
   <div class="text-block"><div class="label">Original Skill</div><div class="headline">脱おりこうさんの<br>3ステップ</div><div class="hair"></div><div class="body">① ほどく ── ルールから解放される<br>② 聴く ── ほんとの願いを見つける<br>③ 選ぶ ── 自分の味方になる</div></div>
 </div>
 
-<div id="scene-s21" class="scene clip text-quiet" data-composition-id="s21" data-start="176" data-duration="8" data-label="体感" data-width="1920" data-height="1080">
+<div id="scene-s21" class="scene clip text-quiet" data-composition-id="s21" data-start="184" data-duration="8" data-label="体感" data-width="1920" data-height="1080">
   
   <div class="text-block"><div class="headline">30秒だけ、<br>自分の中を見てみる<br><span class="gap"></span><span class="sea">「ほんとは＿＿したい。でも＿＿」</span></div></div>
 </div>
 
-<div id="scene-s22" class="scene clip text" data-composition-id="s22" data-start="184" data-duration="8" data-label="STEP1" data-width="1920" data-height="1080">
+<div id="scene-s22" class="scene clip text" data-composition-id="s22" data-start="192" data-duration="8" data-label="STEP1" data-width="1920" data-height="1080">
   
   <div class="text-block"><div class="label">STEP 1</div><div class="headline">①「当たり前」をほどく</div><div class="hair"></div><div class="body">その「でも」は、<br>あなたのどんなルールを守ろうとして<br>出てきましたか？</div></div>
 </div>
 
-<div id="scene-s23" class="scene clip text" data-composition-id="s23" data-start="192" data-duration="8" data-label="STEP2" data-width="1920" data-height="1080">
+<div id="scene-s23" class="scene clip text" data-composition-id="s23" data-start="200" data-duration="8" data-label="STEP2" data-width="1920" data-height="1080">
   
   <div class="text-block"><div class="label">STEP 2</div><div class="headline compact">②「ほんとはどうしたい？」を取り戻す</div><div class="hair"></div><div class="body">誰にも遠慮しなくていいなら、<br><span class="sea">ほんとはどうしたい？</span></div><span class="gap"></span><div class="note">どうしたいか分からないときは、<br>色が羅針盤になる。</div></div>
 </div>
 
-<div id="scene-s24" class="scene clip text" data-composition-id="s24" data-start="200" data-duration="8" data-label="STEP3" data-width="1920" data-height="1080">
+<div id="scene-s24" class="scene clip text" data-composition-id="s24" data-start="208" data-duration="8" data-label="STEP3" data-width="1920" data-height="1080">
   
-  <div class="text-block"><div class="label">STEP 3</div><div class="headline">③ 自分の味方として選んでみる</div><div class="hair"></div><div class="body">監視役の声があっても、<br>3回に1回、小さく選ぶ。</div></div>
+  <div class="text-block"><div class="label">STEP 3</div><div class="headline">③ 自分の味方として選んでみる</div><div class="hair"></div><div class="body">心の中に、監視役だけでなく、<br>完全に味方の<span class="sea">「親友」</span>も住まわせる。</div><span class="gap"></span><div class="body">監視役の声があっても、3回に1回、小さく選ぶ。</div></div>
 </div>
 
-<div id="scene-s25" class="scene clip story-loop-b diagram" data-composition-id="s25" data-start="208" data-duration="8" data-label="図解B 新しいルート" data-width="1920" data-height="1080">
+<div id="scene-s25" class="scene clip story-loop-b diagram" data-composition-id="s25" data-start="216" data-duration="8" data-label="図解B 新しいルート" data-width="1920" data-height="1080">
   
   <div class="loop-wrap">
     <div class="label" style="position:absolute;left:140px;top:72px;width:760px">同じループに、新しいルートが生える</div>
@@ -429,22 +462,27 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--paper);fon
   <img class="diagram-img" src="images/diagram_B.png" alt="同じループに、新しいルートが生える" onerror="this.remove()">
 </div>
 
-<div id="scene-s26" class="scene clip photo-message" data-composition-id="s26" data-start="216" data-duration="8" data-label="声" data-width="1920" data-height="1080">
+<div id="scene-s26" class="scene clip photo-message" data-composition-id="s26" data-start="224" data-duration="8" data-label="声" data-width="1920" data-height="1080">
   <div class="photo-full" style="background-image:url(images/BG_sea.png)"></div><div class="veil"></div>
-  <div class="text-block"><div class="headline compact2"><span class="sea-deep">「お母さんは、<br>泣く子が嫌なんだ」</span></div><div class="hair"></div><div class="note">——その受け取り方が変わって、<br>母に頼れるようになった。</div></div>
+  <div class="text-block"><div class="headline compact2"><span class="sea-deep">「お母さんは、<br>泣く子が嫌なんだ」</span></div><div class="reveal"><div class="hair"></div><div class="note">——その受け取り方が変わって、<br>母に頼れるようになった。</div></div></div>
 </div>
 
-<div id="scene-s27" class="scene clip text" data-composition-id="s27" data-start="224" data-duration="8" data-label="まとめ" data-width="1920" data-height="1080">
+<div id="scene-s27" class="scene clip text" data-composition-id="s27" data-start="232" data-duration="8" data-label="まとめ" data-width="1920" data-height="1080">
   
   <div class="text-block"><div class="label">まとめ</div><div class="headline">今日の3つ</div><div class="hair"></div><div class="body">① 自分だけで解決しても、戻る<br>② 真の原因は、心の中の「監視役」<br>③ 本当の解決策は ほどく→聴く→選ぶ</div></div>
 </div>
 
-<div id="scene-s28" class="scene clip photo-message" data-composition-id="s28" data-start="232" data-duration="8" data-label="私も途中" data-width="1920" data-height="1080">
+<div id="scene-s28" class="scene clip photo-message" data-composition-id="s28" data-start="240" data-duration="8" data-label="私も途中" data-width="1920" data-height="1080">
   <div class="photo-full" style="background-image:url(images/beach_walk.png)"></div><div class="veil"></div>
   <div class="text-block"><div class="headline">私も、<br>まだ途中です。</div><div class="hair"></div><div class="body">だから、<br>最後まで隣にいます。</div></div>
 </div>
 
-<div id="scene-s28b" class="scene clip compare-c" data-composition-id="s28b" data-start="240" data-duration="8" data-label="サポート１" data-width="1920" data-height="1080">
+<div id="scene-s28c" class="scene clip cover-half" data-composition-id="s28c" data-start="248" data-duration="8" data-label="ラテ紹介" data-width="1920" data-height="1080">
+  <div class="photo-half" style="background-image:url(images/latte.png)"></div>
+  <div class="text-block cover-text"><div class="headline compact2">気をつかえるあなたが、<br>気をつかわずに話せる相手。</div><div class="hair"></div><div class="body">はつみの分身AI「ラテちゃん」</div></div>
+</div>
+
+<div id="scene-s28b" class="scene clip compare-c" data-composition-id="s28b" data-start="256" data-duration="8" data-label="サポート１" data-width="1920" data-height="1080">
   <div class="col left">
     <div class="label colhead">ふつうのAI</div>
     <div class="item">あなた<br>「どうしたら、もっとちゃんとできる？」</div><div class="sub">監視役の前提のまま、質問している</div>
@@ -465,7 +503,7 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--paper);fon
   <div class="catch">覚えることと、見抜くことは違う。</div>
 </div>
 
-<div id="scene-s29" class="scene clip cover-half gold-accent" data-composition-id="s29" data-start="248" data-duration="8" data-label="ご案内" data-width="1920" data-height="1080">
+<div id="scene-s29" class="scene clip cover-half gold-accent" data-composition-id="s29" data-start="264" data-duration="8" data-label="ご案内" data-width="1920" data-height="1080">
   <div class="photo-half" style="background-image:url(images/S3_1.png)"></div>
   <div class="text-block cover-text"><div class="headline small">今日の話に、一つでも<br>心当たりがあった方へ</div><div class="hair"></div><div class="body">ソウルカラーをきっかけに、<br>あなたを縛っている<br>ルールを一つ見つける90分</div><span class="gap"></span><div class="label">初回セッション　通常15,000円 →</div><div class="price">9,800円<span class="label">（税込）</span></div><div class="note">＋ 分身AI「ラテ」と1ヶ月、話せます</div></div>
 </div>
@@ -475,7 +513,7 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--paper);fon
 <script>
 
 (function(){
-  var COUNT = 32;
+  var COUNT = 34;
   var EACH = 8;
   var TOTAL = COUNT * EACH;
   var tl = gsap.timeline({ paused: true });
@@ -484,7 +522,7 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--paper);fon
   window.__timelines["root"] = tl;
 
   var scenes = [];
-  var ids = ["s01", "s01b", "s02", "s03", "s04", "s05", "s06", "s07", "s08", "s09", "s10", "s11", "s12", "s13", "s14", "s15", "s15b", "s16", "s17", "s18", "s19", "s20", "s21", "s22", "s23", "s24", "s25", "s26", "s27", "s28", "s28b", "s29"];
+  var ids = ["s01", "s01b", "s02", "s03", "s04", "s05", "s06", "s07", "s08", "s09", "s10", "s11", "s12", "s13", "s13b", "s14", "s15", "s15b", "s16", "s17", "s18", "s19", "s20", "s21", "s22", "s23", "s24", "s25", "s26", "s27", "s28", "s28c", "s28b", "s29"];
   for (var i = 0; i < ids.length; i++) {
     scenes.push({ id: ids[i], el: "scene-" + ids[i], start: i * EACH, duration: EACH });
   }
@@ -532,6 +570,14 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:var(--paper);fon
   else window.addEventListener("load", function(){ setTimeout(postTimeline, 300); });
 })();
 
+</script>
+<script>
+(function(){
+  var sc=document.querySelectorAll('.scene');
+  function sync(){ sc.forEach(function(el){ var on=el.style.visibility==='visible'; if(on!==el.classList.contains('is-on')) el.classList.toggle('is-on',on); }); }
+  new MutationObserver(sync).observe(document.getElementById('root'),{attributes:true,subtree:true,attributeFilter:['style']});
+  sync();
+})();
 </script>
 </body>
 </html>
